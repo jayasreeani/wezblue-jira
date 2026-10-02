@@ -1,72 +1,78 @@
 {
   "version": "1.0.0",
-  "savedAt": "2026-10-02T17:08:39.376Z",
+  "savedAt": "2026-10-02T18:00:00.000Z",
   "users": [
     {
-      "id": "user-1",
-      "email": "sarah.admin@wezblue.com",
-      "name": "Sarah Jenkins",
-      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+      "id": "user-jayasree",
+      "email": "jayasree.kuniyil@wezblue.com",
+      "name": "Jayasree Kuniyil",
+      "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
       "role": "ADMIN",
-      "department": "Executive & DevOps",
+      "jobTitle": "Project Manager",
+      "department": "Project Management",
       "password": "Wezblue@123",
-      "createdAt": "2026-01-10T08:00:00.000Z",
-      "updatedAt": "2026-09-01T08:00:00.000Z"
+      "createdAt": "2026-01-01T08:00:00.000Z",
+      "updatedAt": "2026-10-01T08:00:00.000Z"
     },
     {
-      "id": "user-2",
-      "email": "david.pm@wezblue.com",
-      "name": "David Chen",
-      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-      "role": "PROJECT_MANAGER",
-      "department": "Product Delivery",
-      "password": "Wezblue@123",
-      "createdAt": "2026-01-15T09:00:00.000Z",
-      "updatedAt": "2026-09-15T09:00:00.000Z"
-    },
-    {
-      "id": "user-3",
-      "email": "elena.po@wezblue.com",
-      "name": "Elena Rostova",
+      "id": "user-althaf",
+      "email": "althaf.thajudeen@wezblue.com",
+      "name": "Althaf Thajudeen",
       "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-      "role": "PRODUCT_OWNER",
-      "department": "Product Strategy",
+      "role": "DEVELOPER",
+      "jobTitle": "Architect",
+      "department": "Architecture & Engineering",
       "password": "Wezblue@123",
-      "createdAt": "2026-02-01T10:00:00.000Z",
-      "updatedAt": "2026-09-20T10:00:00.000Z"
+      "createdAt": "2026-01-01T08:00:00.000Z",
+      "updatedAt": "2026-10-01T08:00:00.000Z"
     },
     {
-      "id": "user-4",
-      "email": "alex.dev@wezblue.com",
-      "name": "Alex Rivera",
+      "id": "user-binsitha",
+      "email": "binsitha.ramees@wezblue.com",
+      "name": "Binsitha Ramees",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150",
+      "role": "PROJECT_MANAGER",
+      "jobTitle": "Scrum Master",
+      "department": "Agile & Delivery",
+      "password": "Wezblue@123",
+      "createdAt": "2026-01-01T08:00:00.000Z",
+      "updatedAt": "2026-10-01T08:00:00.000Z"
+    },
+    {
+      "id": "user-abhijith",
+      "email": "abhijith.mohan@wezblue.com",
+      "name": "Abhijith Mohan",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+      "role": "DEVELOPER",
+      "jobTitle": "Architect",
+      "department": "Architecture & Engineering",
+      "password": "Wezblue@123",
+      "createdAt": "2026-01-01T08:00:00.000Z",
+      "updatedAt": "2026-10-01T08:00:00.000Z"
+    },
+    {
+      "id": "user-ramees",
+      "email": "ramees.raja@wezblue.com",
+      "name": "Ramees Raja",
       "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
       "role": "DEVELOPER",
-      "department": "Core Engineering",
+      "jobTitle": "Architect",
+      "department": "Architecture & Engineering",
       "password": "Wezblue@123",
-      "createdAt": "2026-02-15T11:00:00.000Z",
-      "updatedAt": "2026-10-01T11:00:00.000Z"
+      "createdAt": "2026-01-01T08:00:00.000Z",
+      "updatedAt": "2026-10-01T08:00:00.000Z"
     },
     {
-      "id": "user-5",
-      "email": "priya.qa@wezblue.com",
-      "name": "Priya Patel",
-      "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
-      "role": "QA_ENGINEER",
-      "department": "Quality Assurance",
+      "id": "user-vineeth",
+      "email": "vineeth.m@wezblue.com",
+      "name": "Vineeth M",
+      "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
+      "role": "DEVELOPER",
+      "jobTitle": "UI/UX Designer",
+      "department": "Product Design",
       "password": "Wezblue@123",
-      "createdAt": "2026-03-01T09:30:00.000Z",
-      "updatedAt": "2026-10-01T09:30:00.000Z"
-    },
-    {
-      "id": "user-6",
-      "email": "marcus.stakeholder@wezblue.com",
-      "name": "Marcus Vance",
-      "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
-      "role": "VIEWER",
-      "department": "Customer Success & Stakeholder",
-      "password": "Wezblue@123",
-      "createdAt": "2026-04-10T14:00:00.000Z",
-      "updatedAt": "2026-09-10T14:00:00.000Z"
+      "createdAt": "2026-01-01T08:00:00.000Z",
+      "updatedAt": "2026-10-01T08:00:00.000Z"
     }
   ],
   "projects": [
@@ -74,754 +80,61 @@
       "id": "proj-1",
       "key": "WEZ",
       "name": "Wezblue Enterprise Platform",
-      "description": "Next-generation distributed microservices platform with multi-tenant RBAC and real-time streaming.",
+      "description": "Core enterprise platform and digital solutions for Wezblue Technologies",
+      "leadId": "user-jayasree",
       "template": "SCRUM",
-      "leadId": "user-2",
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-10-01T00:00:00.000Z"
-    },
-    {
-      "id": "proj-2",
-      "key": "CYBER",
-      "name": "CyberSec Zero-Trust Gateway",
-      "description": "Perimeter security, OAuth2 tokens exchange, and TLS automated certificate rotation.",
-      "template": "KANBAN",
-      "leadId": "user-1",
-      "createdAt": "2026-03-01T00:00:00.000Z",
-      "updatedAt": "2026-09-28T00:00:00.000Z"
-    }
-  ],
-  "sprints": [
-    {
-      "id": "sprint-23",
-      "projectId": "proj-1",
-      "name": "Wezblue Sprint 23 - Security Hardening",
-      "goal": "Complete SOC2 compliance logging and patch critical token expiry edge cases.",
-      "startDate": "2026-09-01T00:00:00.000Z",
-      "endDate": "2026-09-14T23:59:59.000Z",
-      "status": "COMPLETED",
-      "velocity": 34,
-      "createdAt": "2026-08-25T00:00:00.000Z",
-      "updatedAt": "2026-09-15T00:00:00.000Z"
-    },
-    {
-      "id": "sprint-24",
-      "projectId": "proj-1",
-      "name": "Wezblue Sprint 24 - SSO & Analytics MVP",
-      "goal": "Ship SAML 2.0 Okta connector and deliver high-throughput dashboard telemetry feed.",
-      "startDate": "2026-09-15T00:00:00.000Z",
-      "endDate": "2026-10-06T23:59:59.000Z",
-      "status": "ACTIVE",
-      "velocity": 28,
-      "createdAt": "2026-09-10T00:00:00.000Z",
-      "updatedAt": "2026-09-15T00:00:00.000Z"
-    },
-    {
-      "id": "sprint-25",
-      "projectId": "proj-1",
-      "name": "Wezblue Sprint 25 - Mobile PWA & RBAC Polishing",
-      "goal": "Deliver touch-friendly drag-and-drop boards and granular custom role builder.",
-      "startDate": "2026-10-07T00:00:00.000Z",
-      "endDate": "2026-10-21T23:59:59.000Z",
-      "status": "FUTURE",
-      "velocity": 0,
-      "createdAt": "2026-09-28T00:00:00.000Z",
-      "updatedAt": "2026-09-28T00:00:00.000Z"
-    }
-  ],
-  "epics": [
-    {
-      "id": "epic-1",
-      "projectId": "proj-1",
-      "name": "Multi-Factor & SAML SSO Integration",
-      "summary": "Enterprise identity provider federation with Okta, Azure AD, and TOTP fallback.",
-      "color": "#8777d9",
-      "status": "IN_PROGRESS",
-      "createdAt": "2026-08-01T08:00:00.000Z",
-      "updatedAt": "2026-09-20T08:00:00.000Z"
-    },
-    {
-      "id": "epic-2",
-      "projectId": "proj-1",
-      "name": "High-Throughput Analytics Pipeline",
-      "summary": "Real-time Kafka streaming aggregation with clickhouse OLAP storage engine.",
-      "color": "#0052cc",
-      "status": "IN_PROGRESS",
-      "createdAt": "2026-08-15T09:00:00.000Z",
-      "updatedAt": "2026-09-25T09:00:00.000Z"
-    },
-    {
-      "id": "epic-3",
-      "projectId": "proj-1",
-      "name": "SOC2 Compliance & Audit Logs",
-      "summary": "Immutable audit event streaming with signed hashes and tenant-partitioned retention.",
-      "color": "#36b37e",
-      "status": "DONE",
-      "createdAt": "2026-07-01T10:00:00.000Z",
-      "updatedAt": "2026-09-10T10:00:00.000Z"
-    },
-    {
-      "id": "epic-4",
-      "projectId": "proj-1",
-      "name": "Mobile Responsive Web Workspace",
-      "summary": "Modern PWA support and responsive tablet/mobile viewports for remote team leads.",
-      "color": "#ff8b00",
-      "status": "TODO",
-      "createdAt": "2026-09-01T11:00:00.000Z",
-      "updatedAt": "2026-09-01T11:00:00.000Z"
-    }
-  ],
-  "issues": [
-    {
-      "id": "issue-101",
-      "key": "WEZ-101",
-      "projectId": "proj-1",
-      "type": "STORY",
-      "summary": "As a resident, I want to log in with a one-time code sent to my mobile or email, so that I don't need to remember a password.",
-      "feature": "Login via mobile OTP / email",
-      "acceptanceCriteria": "1. Given I enter a registered mobile/email, when I request a code, then a 6-digit OTP is sent within 30 seconds and expires after 5 minutes\n2. Given I enter a wrong OTP 5 times, when I try again, then login is blocked for 15 minutes and I see a clear message\n3. Given I enter an unregistered number, when I request a code, then I am told to use my invite or request to join a society\n4. Given I choose 'remember this device', when I reopen the app within 30 days, then I stay logged in",
-      "phase": "MVP",
-      "description": "Enable passwordless authentication for society residents using SMS OTP and Email magic codes.",
-      "status": "IN_PROGRESS",
-      "priority": "HIGH",
-      "storyPoints": 8,
-      "actualPoints": 0,
-      "estimatedHours": 24,
-      "actualHours": 16,
-      "remainingHours": 8,
-      "plannedCompletionDate": "2026-10-04T18:00:00.000Z",
-      "order": 1,
-      "assigneeId": "user-4",
-      "reporterId": "user-3",
-      "sprintId": "sprint-24",
-      "epicId": "epic-1",
-      "figmaUrl": "https://www.figma.com/design/sample-wezblue-sso/Enterprise-SSO-Configuration-Flow",
-      "linkedDocIds": [
-        "doc-1",
-        "doc-3"
-      ],
-      "dueDate": "2026-10-04T18:00:00.000Z",
-      "workLogs": [
-        {
-          "id": "wl-1",
-          "issueId": "issue-101",
-          "userId": "user-4",
-          "hours": 8,
-          "comment": "Configured metadata parser and XML schema validator",
-          "createdAt": "2026-09-17T16:00:00.000Z"
-        },
-        {
-          "id": "wl-2",
-          "issueId": "issue-101",
-          "userId": "user-4",
-          "hours": 8,
-          "comment": "Implemented certificate verification and signature check",
-          "createdAt": "2026-09-19T17:00:00.000Z"
-        }
-      ],
-      "subtasks": [
-        {
-          "id": "sub-1",
-          "title": "Parse SAML 2.0 XML metadata schema",
-          "completed": true
-        },
-        {
-          "id": "sub-2",
-          "title": "Implement XML DSig signature verification",
-          "completed": true
-        },
-        {
-          "id": "sub-3",
-          "title": "JIT user profile synchronization",
-          "completed": false
-        },
-        {
-          "id": "sub-4",
-          "title": "Unit & e2e mock Okta assertions",
-          "completed": false
-        }
-      ],
-      "comments": [
-        {
-          "id": "comm-1",
-          "issueId": "issue-101",
-          "authorId": "user-3",
-          "content": "Please ensure clock drift of up to 60 seconds is tolerated in the NotBefore / NotOnOrAfter checks.",
-          "createdAt": "2026-09-18T10:30:00.000Z",
-          "updatedAt": "2026-09-18T10:30:00.000Z"
-        },
-        {
-          "id": "comm-2",
-          "issueId": "issue-101",
-          "authorId": "user-4",
-          "content": "Clock skew tolerance is implemented with configurable leeway parameter defaulting to 60s.",
-          "createdAt": "2026-09-20T14:15:00.000Z",
-          "updatedAt": "2026-09-20T14:15:00.000Z"
-        }
-      ],
-      "attachments": [
-        {
-          "id": "att-1",
-          "issueId": "issue-101",
-          "filename": "okta-saml-metadata-spec.xml",
-          "fileUrl": "#",
-          "fileSize": 42800,
-          "fileType": "application/xml",
-          "uploaderId": "user-3",
-          "createdAt": "2026-09-16T11:00:00.000Z"
-        }
-      ],
-      "createdAt": "2026-09-15T09:00:00.000Z",
-      "updatedAt": "2026-09-20T14:15:00.000Z"
-    },
-    {
-      "id": "issue-102",
-      "key": "WEZ-102",
-      "projectId": "proj-1",
-      "type": "BUG",
-      "summary": "JWT refresh token rotation fails when concurrent API requests trigger simultaneously",
-      "description": "When multiple parallel async requests are fired with an expired access token, the first request invalidates the refresh token while the second request fails with 401 Unauthorized instead of queued deduplication.",
-      "status": "IN_QA",
-      "priority": "HIGHEST",
-      "severity": "CRITICAL",
-      "storyPoints": 5,
-      "actualPoints": 0,
-      "estimatedHours": 12,
-      "actualHours": 4,
-      "remainingHours": 8,
-      "plannedCompletionDate": "2026-10-05T18:00:00.000Z",
-      "linkedDocIds": [
-        "doc-1",
-        "doc-5"
-      ],
-      "parentStoryId": "issue-101",
-      "order": 2,
-      "assigneeId": "user-4",
-      "reporterId": "user-5",
-      "sprintId": "sprint-24",
-      "epicId": "epic-1",
-      "environment": "Staging cluster (k8s v1.30, Node.js 20)",
-      "reproduceSteps": "1. Log in with test account\n2. Open browser DevTools Network tab\n3. Throttle network to Slow 3G\n4. Trigger 5 simultaneous report downloads\n5. Observe 4 of 5 requests throw 'Invalid Token Family' error",
-      "workLogs": [
-        {
-          "id": "wl-3",
-          "issueId": "issue-102",
-          "userId": "user-4",
-          "hours": 4,
-          "comment": "Added mutex queue for in-flight token refresh promises",
-          "createdAt": "2026-09-23T15:00:00.000Z"
-        }
-      ],
-      "subtasks": [
-        {
-          "id": "sub-5",
-          "title": "Add client-side in-flight token refresh mutex/promise queue",
-          "completed": false
-        },
-        {
-          "id": "sub-6",
-          "title": "Add 10-second grace period for token family reuse detection",
-          "completed": false
-        }
-      ],
-      "comments": [
-        {
-          "id": "comm-3",
-          "issueId": "issue-102",
-          "authorId": "user-5",
-          "content": "Reproduced consistently on 5 separate staging nodes. Blocking mobile client release.",
-          "createdAt": "2026-09-22T08:00:00.000Z",
-          "updatedAt": "2026-09-22T08:00:00.000Z"
-        }
-      ],
-      "createdAt": "2026-09-21T16:00:00.000Z",
-      "updatedAt": "2026-09-22T08:00:00.000Z"
-    },
-    {
-      "id": "issue-103",
-      "key": "WEZ-103",
-      "projectId": "proj-1",
-      "type": "STORY",
-      "summary": "Telemetry real-time dashboard widget for Kafka event ingestion throughput",
-      "description": "Design and implement an SVG time-series visualizer showing messages per second (EPS), latency percentiles (p95, p99), and consumer group lag.",
-      "status": "UNDER_REVIEW",
-      "priority": "HIGH",
-      "storyPoints": 5,
-      "actualPoints": 0,
-      "estimatedHours": 16,
-      "actualHours": 14,
-      "remainingHours": 2,
-      "plannedCompletionDate": "2026-10-02T18:00:00.000Z",
-      "order": 3,
-      "assigneeId": "user-4",
-      "reporterId": "user-2",
-      "sprintId": "sprint-24",
-      "epicId": "epic-2",
-      "figmaUrl": "https://www.figma.com/design/sample-kafka-telemetry/Kafka-Ingestion-Dashboard-Widgets",
-      "dueDate": "2026-10-02T18:00:00.000Z",
-      "workLogs": [
-        {
-          "id": "wl-4",
-          "issueId": "issue-103",
-          "userId": "user-4",
-          "hours": 8,
-          "comment": "Prometheus metrics hookup and Kafka telemetry aggregator",
-          "createdAt": "2026-09-28T16:00:00.000Z"
-        },
-        {
-          "id": "wl-5",
-          "issueId": "issue-103",
-          "userId": "user-4",
-          "hours": 6,
-          "comment": "SVG rendering charts with 60fps smoothing",
-          "createdAt": "2026-09-29T17:00:00.000Z"
-        }
-      ],
-      "subtasks": [
-        {
-          "id": "sub-7",
-          "title": "Prometheus exporter endpoint for Kafka metrics",
-          "completed": true
-        },
-        {
-          "id": "sub-8",
-          "title": "React interactive charting with threshold alerts",
-          "completed": true
-        },
-        {
-          "id": "sub-9",
-          "title": "Benchmark render at 60 FPS under continuous 100ms updates",
-          "completed": true
-        }
-      ],
-      "comments": [],
-      "createdAt": "2026-09-16T10:00:00.000Z",
-      "updatedAt": "2026-09-30T16:00:00.000Z"
-    },
-    {
-      "id": "issue-104",
-      "key": "WEZ-104",
-      "projectId": "proj-1",
-      "type": "TASK",
-      "summary": "Migrate database connection pooling to PgBouncer with keepalive tuning",
-      "description": "Configure PgBouncer session pooling to support up to 5,000 active client connections with idle timeout of 60 seconds and max client connections of 10,000.",
-      "status": "DONE",
-      "priority": "MEDIUM",
-      "storyPoints": 3,
-      "actualPoints": 3,
-      "estimatedHours": 8,
-      "actualHours": 8,
-      "remainingHours": 0,
-      "plannedCompletionDate": "2026-09-25T18:00:00.000Z",
-      "actualCompletionDate": "2026-09-25T17:30:00.000Z",
-      "parentStoryId": "issue-101",
-      "order": 4,
-      "assigneeId": "user-1",
-      "reporterId": "user-2",
-      "sprintId": "sprint-24",
-      "epicId": "epic-3",
-      "workLogs": [
-        {
-          "id": "wl-6",
-          "issueId": "issue-104",
-          "userId": "user-1",
-          "hours": 8,
-          "comment": "Deployed PgBouncer Helm chart and verified pool connections under 2500 RPS load",
-          "createdAt": "2026-09-25T17:00:00.000Z"
-        }
-      ],
-      "subtasks": [
-        {
-          "id": "sub-10",
-          "title": "Deploy PgBouncer sidecar helm chart",
-          "completed": true
-        },
-        {
-          "id": "sub-11",
-          "title": "Run load test with 2,500 simultaneous queries",
-          "completed": true
-        }
-      ],
-      "createdAt": "2026-09-15T11:00:00.000Z",
-      "updatedAt": "2026-09-25T17:30:00.000Z"
-    },
-    {
-      "id": "issue-105",
-      "key": "WEZ-105",
-      "projectId": "proj-1",
-      "type": "BUG",
-      "summary": "CSV export for audit logs truncates timestamps in non-UTC browser locales",
-      "description": "Exported CSV records show undefined offset or negative hours for users in IST and JST time zones.",
-      "status": "IN_STAKEHOLDER_VALIDATION",
-      "priority": "MEDIUM",
-      "severity": "MINOR",
-      "storyPoints": 2,
-      "actualPoints": 0,
-      "estimatedHours": 6,
-      "actualHours": 5,
-      "remainingHours": 1,
-      "plannedCompletionDate": "2026-10-03T18:00:00.000Z",
-      "parentStoryId": "issue-103",
-      "order": 5,
-      "assigneeId": "user-5",
-      "reporterId": "user-6",
-      "sprintId": "sprint-24",
-      "epicId": "epic-3",
-      "workLogs": [
-        {
-          "id": "wl-7",
-          "issueId": "issue-105",
-          "userId": "user-5",
-          "hours": 5,
-          "comment": "Patched ISO-8601 formatting in date export service and verified IST/JST offsets",
-          "createdAt": "2026-09-29T10:00:00.000Z"
-        }
-      ],
-      "createdAt": "2026-09-26T14:00:00.000Z",
-      "updatedAt": "2026-09-29T11:00:00.000Z"
-    },
-    {
-      "id": "issue-106",
-      "key": "WEZ-106",
-      "projectId": "proj-1",
-      "type": "TASK",
-      "summary": "Write OpenAPI 3.1 specifications for Tenant Onboarding REST Endpoints",
-      "description": "Document all parameters, request bodies, error schemas (RFC 7807), and rate-limit headers for `/api/v1/tenants`.",
-      "status": "TODO",
-      "priority": "LOW",
-      "storyPoints": 2,
-      "actualPoints": 0,
-      "estimatedHours": 6,
-      "actualHours": 0,
-      "remainingHours": 6,
-      "plannedCompletionDate": "2026-10-06T18:00:00.000Z",
-      "parentStoryId": "issue-103",
-      "order": 6,
-      "assigneeId": "user-2",
-      "reporterId": "user-3",
-      "sprintId": "sprint-24",
-      "createdAt": "2026-09-27T09:00:00.000Z",
-      "updatedAt": "2026-09-27T09:00:00.000Z"
-    },
-    {
-      "id": "issue-107",
-      "key": "WEZ-107",
-      "projectId": "proj-1",
-      "type": "STORY",
-      "summary": "Support Custom Role definitions with dynamic granular permission toggles",
-      "description": "Allow workspace owners to create custom roles (e.g. 'Security Auditor', 'Billing Lead') with specific read/write capability flags.",
-      "status": "BACKLOG",
-      "priority": "HIGH",
-      "storyPoints": 8,
-      "actualPoints": 0,
-      "estimatedHours": 20,
-      "actualHours": 0,
-      "remainingHours": 20,
-      "plannedCompletionDate": "2026-10-18T18:00:00.000Z",
-      "linkedDocIds": [
-        "doc-4"
-      ],
-      "order": 7,
-      "assigneeId": "user-4",
-      "reporterId": "user-2",
-      "sprintId": "sprint-25",
-      "epicId": "epic-3",
-      "createdAt": "2026-09-28T10:00:00.000Z",
-      "updatedAt": "2026-09-28T10:00:00.000Z"
-    },
-    {
-      "id": "issue-108",
-      "key": "WEZ-108",
-      "projectId": "proj-1",
-      "type": "TASK",
-      "summary": "Implement touch-optimized drag-and-drop handles for mobile board view",
-      "description": "Add long-press gestures and mobile reordering trays for tablet users using iPad / Android tablets.",
-      "status": "BACKLOG",
-      "priority": "MEDIUM",
-      "storyPoints": 5,
-      "actualPoints": 0,
-      "estimatedHours": 15,
-      "actualHours": 0,
-      "remainingHours": 15,
-      "plannedCompletionDate": "2026-10-19T18:00:00.000Z",
-      "linkedDocIds": [
-        "doc-4"
-      ],
-      "parentStoryId": "issue-107",
-      "order": 8,
-      "assigneeId": "user-4",
-      "reporterId": "user-3",
-      "sprintId": "sprint-25",
-      "epicId": "epic-4",
-      "createdAt": "2026-09-29T11:00:00.000Z",
-      "updatedAt": "2026-09-29T11:00:00.000Z"
-    },
-    {
-      "id": "issue-109",
-      "key": "WEZ-109",
-      "projectId": "proj-1",
-      "type": "STORY",
-      "summary": "Automated webhook dispatch for Jira issue transitions to Slack and Microsoft Teams",
-      "description": "Provide outgoing HMAC-signed webhooks on issue status changes, comments, and assignee reassignments.",
-      "status": "BACKLOG",
-      "priority": "MEDIUM",
-      "storyPoints": 5,
-      "actualPoints": 0,
-      "estimatedHours": 16,
-      "actualHours": 0,
-      "remainingHours": 16,
-      "plannedCompletionDate": "2026-10-20T18:00:00.000Z",
-      "order": 9,
-      "reporterId": "user-3",
-      "createdAt": "2026-09-30T10:00:00.000Z",
-      "updatedAt": "2026-09-30T10:00:00.000Z"
-    },
-    {
-      "id": "issue-110",
-      "key": "WEZ-110",
-      "projectId": "proj-1",
-      "type": "BUG",
-      "summary": "Fix memory leak in websocket heartbeat ping listener on client disconnect",
-      "description": "Socket connection does not clear intervals upon abrupt client network disconnect, retaining 12KB per dead connection.",
-      "status": "BACKLOG",
-      "priority": "HIGH",
-      "severity": "MAJOR",
-      "storyPoints": 3,
-      "actualPoints": 0,
-      "estimatedHours": 8,
-      "actualHours": 0,
-      "remainingHours": 8,
-      "plannedCompletionDate": "2026-10-21T18:00:00.000Z",
-      "linkedDocIds": [
-        "doc-2",
-        "doc-5"
-      ],
-      "parentStoryId": "issue-101",
-      "order": 10,
-      "reporterId": "user-5",
-      "createdAt": "2026-10-01T08:00:00.000Z",
+      "createdAt": "2026-01-01T08:00:00.000Z",
       "updatedAt": "2026-10-01T08:00:00.000Z"
     }
   ],
-  "notifications": [
-    {
-      "id": "notif-1",
-      "userId": "user-4",
-      "title": "New Issue Assigned",
-      "message": "David Chen assigned you to WEZ-102: JWT refresh token rotation fails.",
-      "link": "WEZ-102",
-      "read": false,
-      "createdAt": "2026-10-01T15:30:00.000Z"
-    },
-    {
-      "id": "notif-2",
-      "userId": "user-4",
-      "title": "Comment Mention",
-      "message": "Elena Rostova commented on WEZ-101: 'Please ensure clock drift of up to 60 seconds is tolerated.'",
-      "link": "WEZ-101",
-      "read": false,
-      "createdAt": "2026-10-01T16:00:00.000Z"
-    },
-    {
-      "id": "notif-3",
-      "userId": "user-4",
-      "title": "Sprint Started",
-      "message": "Wezblue Sprint 24 is now ACTIVE. Estimated completion: Oct 6, 2026.",
-      "link": "sprint-24",
-      "read": true,
-      "createdAt": "2026-09-15T00:00:00.000Z"
-    }
-  ],
-  "activityLogs": [
-    {
-      "id": "act-1",
-      "projectId": "proj-1",
-      "issueId": "issue-104",
-      "issueKey": "WEZ-104",
-      "userId": "user-1",
-      "action": "STATUS_CHANGE",
-      "fieldChanged": "status",
-      "oldValue": "IN_REVIEW",
-      "newValue": "DONE",
-      "createdAt": "2026-09-25T17:30:00.000Z"
-    },
-    {
-      "id": "act-2",
-      "projectId": "proj-1",
-      "issueId": "issue-103",
-      "issueKey": "WEZ-103",
-      "userId": "user-4",
-      "action": "STATUS_CHANGE",
-      "fieldChanged": "status",
-      "oldValue": "IN_PROGRESS",
-      "newValue": "IN_REVIEW",
-      "createdAt": "2026-09-30T16:00:00.000Z"
-    },
-    {
-      "id": "act-3",
-      "projectId": "proj-1",
-      "issueId": "issue-101",
-      "issueKey": "WEZ-101",
-      "userId": "user-4",
-      "action": "COMMENT_ADDED",
-      "fieldChanged": "comments",
-      "oldValue": "",
-      "newValue": "Clock skew tolerance is implemented with configurable leeway parameter defaulting to 60s.",
-      "createdAt": "2026-09-20T14:15:00.000Z"
-    },
-    {
-      "id": "act-4",
-      "projectId": "proj-1",
-      "issueId": "issue-102",
-      "issueKey": "WEZ-102",
-      "userId": "user-5",
-      "action": "ISSUE_CREATED",
-      "fieldChanged": "key",
-      "oldValue": "",
-      "newValue": "WEZ-102",
-      "createdAt": "2026-09-21T16:00:00.000Z"
-    }
-  ],
+  "sprints": [],
+  "epics": [],
+  "issues": [],
+  "notifications": [],
+  "activityLogs": [],
   "spaces": [
     {
       "id": "space-eng",
-      "key": "ENG",
       "name": "Engineering & Architecture",
-      "description": "System designs, architectural decision records (ADRs), security RFCs, and API specifications.",
-      "icon": "Cpu",
-      "color": "#0052cc",
-      "projectId": "proj-1",
-      "createdAt": "2026-01-15T00:00:00.000Z",
-      "updatedAt": "2026-09-25T00:00:00.000Z"
+      "key": "ENG",
+      "description": "System architecture, technical specifications, and RFCs",
+      "icon": "code",
+      "color": "#0052CC",
+      "createdAt": "2026-01-01T08:00:00.000Z",
+      "updatedAt": "2026-10-01T08:00:00.000Z"
     },
     {
       "id": "space-prd",
+      "name": "Product Delivery & Requirements",
       "key": "PRD",
-      "name": "Product Requirements & Specs",
-      "description": "Product requirements documents, feature roadmaps, acceptance criteria, and user journey flows.",
-      "icon": "BookOpen",
-      "color": "#6554c0",
-      "projectId": "proj-1",
-      "createdAt": "2026-01-20T00:00:00.000Z",
-      "updatedAt": "2026-09-28T00:00:00.000Z"
+      "description": "Product roadmap, project deliverables, and sprint documentation",
+      "icon": "target",
+      "color": "#36B37E",
+      "createdAt": "2026-01-01T08:00:00.000Z",
+      "updatedAt": "2026-10-01T08:00:00.000Z"
     },
     {
       "id": "space-ops",
+      "name": "Agile & Delivery Operations",
       "key": "OPS",
-      "name": "Operations & Runbooks",
-      "description": "Deployment guides, incident response playbooks, sprint retrospectives, and infrastructure runbooks.",
-      "icon": "Terminal",
-      "color": "#00875a",
-      "projectId": "proj-1",
-      "createdAt": "2026-02-01T00:00:00.000Z",
-      "updatedAt": "2026-10-01T00:00:00.000Z"
+      "description": "Agile ceremonies, sprint retrospectives, and team playbooks",
+      "icon": "compass",
+      "color": "#FFAB00",
+      "createdAt": "2026-01-01T08:00:00.000Z",
+      "updatedAt": "2026-10-01T08:00:00.000Z"
     }
   ],
-  "docs": [
-    {
-      "id": "doc-1",
-      "spaceId": "space-eng",
-      "title": "Architecture RFC: Enterprise SSO & OAuth2 / SAML Flow",
-      "excerpt": "Comprehensive technical specification for passwordless authentication, token rotation, and clock drift leeway.",
-      "status": "PUBLISHED",
-      "category": "ARCHITECTURE",
-      "authorId": "user-4",
-      "linkedIssueKeys": [
-        "WEZ-101",
-        "WEZ-102"
-      ],
-      "createdAt": "2026-09-12T10:00:00.000Z",
-      "updatedAt": "2026-09-25T14:30:00.000Z",
-      "content": "# Architecture RFC: Enterprise SSO & OAuth2 / SAML Flow\n\n## 1. Executive Summary\nThis RFC specifies the authentication architecture for Wezblue Enterprise Jira, supporting both passwordless mobile OTP authentication and enterprise Identity Providers (Okta, Azure AD, Google Workspace) via SAML 2.0 and OpenID Connect (OIDC).\n\n## 2. Token Life-Cycle & Session Management\n- **Access Tokens**: Short-lived JWTs (15-minute expiration) signed via RS256 with rotating public keys published at `/.well-known/jwks.json`.\n- **Refresh Tokens**: Opaque tokens stored in Redis with 30-day sliding TTL. Each refresh rotates the token string and invalidates the previous token.\n- **Clock Drift Tolerance**: To prevent intermittent failures caused by NTP drift between Okta and Wezblue gateway, clock skew leeway is configured to **60 seconds**.\n\n## 3. High-Level Flow\n1. User enters mobile or email at the gateway.\n2. The auth engine checks tenant domain mappings:\n   - For enterprise domains (`@enterprise.io`), redirect to SAML/OIDC SSO IdP.\n   - For resident society users, issue a 6-digit cryptographic OTP expiring in 5 minutes.\n3. Upon validation, the auth service issues an `Authorization` Bearer token and a secure HttpOnly cookie for token renewal.\n\n## 4. Security Guardrails & Rate Limiting\n- **Brute-force protection**: 5 consecutive invalid OTP attempts trigger an automatic 15-minute lock on that account.\n- **Audit Logging**: Every authentication event (success, failure, token rotation) generates a tamper-evident log in the security stream.\n\n## 5. Related Jira Issues\n- Refers to **WEZ-101** (Passwordless resident authentication & OTP verification).\n- Refers to **WEZ-102** (JWT refresh token rotation bug fix)."
-    },
-    {
-      "id": "doc-2",
-      "spaceId": "space-eng",
-      "title": "ADR-004: Microservices Heartbeat & WebSocket Connection Pool",
-      "excerpt": "Resolution strategy for websocket memory leak on client disconnect and heartbeat interval cleanup.",
-      "status": "IN_REVIEW",
-      "category": "DECISION_RECORD",
-      "authorId": "user-4",
-      "linkedIssueKeys": [
-        "WEZ-110"
-      ],
-      "createdAt": "2026-09-22T09:00:00.000Z",
-      "updatedAt": "2026-10-01T11:00:00.000Z",
-      "content": "# ADR-004: Microservices Heartbeat & WebSocket Connection Pool\n\n## 1. Status\n**IN_REVIEW** (Proposed by Alex Rivera, under review by Sarah Jenkins)\n\n## 2. Context\nDuring long-running board sessions, client disconnects due to mobile network handoffs or closed tabs failed to trigger server-side interval cleanup. Each orphaned client connection leaked approximately **12 KB** in heap allocations, eventually exhausting NodeJS memory limits under peak concurrency.\n\n## 3. Decision\n1. Implement a centralized `HeartbeatManager` that attaches a single timer per cluster worker instead of spawning independent intervals per connection.\n2. Listen for socket `close` and `error` events with deterministic cleanup hooks.\n3. Automatically terminate connections whose client ping is absent for longer than 45 seconds (3 missed heartbeats).\n\n## 4. Consequences\n- **Positive**: Heap allocations drop by 94% on disconnect spikes.\n- **Positive**: Transparent reconnection recovery for mobile users within 30 seconds.\n- **Negative**: Requires Redis Pub/Sub backplane for multi-instance socket synchronization.\n\n## 5. Related Jira Issues\n- Directly addresses **WEZ-110** (Fix memory leak in websocket heartbeat ping listener)."
-    },
-    {
-      "id": "doc-3",
-      "spaceId": "space-prd",
-      "title": "PRD: Mobile OTP & Passwordless Resident Authentication",
-      "excerpt": "Product requirements document outlining the mobile OTP login flow, rate limiting, and 30-day persistent sessions.",
-      "status": "PUBLISHED",
-      "category": "PRD",
-      "authorId": "user-3",
-      "linkedIssueKeys": [
-        "WEZ-101"
-      ],
-      "createdAt": "2026-09-10T14:00:00.000Z",
-      "updatedAt": "2026-09-20T17:00:00.000Z",
-      "content": "# PRD: Mobile OTP & Passwordless Resident Authentication\n\n## 1. Problem Statement\nSociety residents and property owners frequently forget passwords, leading to high support ticket volume and abandoned logins. Users demand a seamless passwordless experience using mobile OTP or email one-time links.\n\n## 2. Target Persona\n- **Residents & Tenants**: Non-technical users accessing property announcements, amenities, and visitor passes from smartphones.\n- **Security Admins**: Require verified phone numbers and protection against SIM-swap / brute-force abuse.\n\n## 3. Scope & Release Phase: MVP\nThis feature is targeted as the flagship auth capability for the **MVP** release of Wezblue Enterprise Platform.\n\n## 4. Acceptance Criteria (Given / When / Then)\n1. **Given** I enter a registered mobile or email, **when** I request a code, **then** a 6-digit OTP is sent within 30 seconds and expires after 5 minutes.\n2. **Given** I enter a wrong OTP 5 times, **when** I try again, **then** login is blocked for 15 minutes and I see a clear message.\n3. **Given** I enter an unregistered number, **when** I request a code, **then** I am told to use my invite or request to join a society.\n4. **Given** I choose 'remember this device', **when** I reopen the app within 30 days, **then** I stay logged in.\n\n## 5. Success Metrics\n- **Auth Completion Rate**: > 92% of initiated logins completed within 60 seconds.\n- **Password Reset Requests**: Decreased by > 75% compared to legacy credentials.\n\n## 6. Related Jira Issues\n- Implemented by **WEZ-101** (User Story under Account & Profile Epic)."
-    },
-    {
-      "id": "doc-4",
-      "spaceId": "space-prd",
-      "title": "PRD: Granular Role-Based Access Control (RBAC)",
-      "excerpt": "Specifications for custom role definitions, dynamic capability toggles, and security audit logs.",
-      "status": "PUBLISHED",
-      "category": "PRD",
-      "authorId": "user-3",
-      "linkedIssueKeys": [
-        "WEZ-107",
-        "WEZ-108"
-      ],
-      "createdAt": "2026-09-18T11:00:00.000Z",
-      "updatedAt": "2026-09-29T16:00:00.000Z",
-      "content": "# PRD: Granular Role-Based Access Control (RBAC)\n\n## 1. Objective\nAllow enterprise workspace owners to define custom roles (e.g. *Security Auditor*, *Billing Lead*, *Vendor Contractor*) with granular permission toggles, ensuring least-privilege security compliance.\n\n## 2. Key Capabilities\n- **Role Creator**: Dynamic role builder with capability checkboxes (Sprint Management, Issue Deletion, Billing, Audit Logs).\n- **Mobile Touch Reordering**: Drag-and-drop handles allowing tablet and smartphone administrators to reorder permission hierarchies.\n- **Audit Traceability**: Any change to user role assignments must record the changer's ID, previous role, and new role in the audit log.\n\n## 3. Related Jira Issues\n- **WEZ-107**: Support Custom Role definitions with dynamic granular permission toggles.\n- **WEZ-108**: Implement touch-optimized drag-and-drop handles for mobile board view."
-    },
-    {
-      "id": "doc-5",
-      "spaceId": "space-ops",
-      "title": "Runbook: Production Incident Triage & Log Inspection",
-      "excerpt": "Step-by-step incident response playbook for high-severity alerts, deadlock diagnosis, and automated rollbacks.",
-      "status": "PUBLISHED",
-      "category": "RUNBOOK",
-      "authorId": "user-1",
-      "linkedIssueKeys": [
-        "WEZ-102",
-        "WEZ-110"
-      ],
-      "createdAt": "2026-08-15T08:00:00.000Z",
-      "updatedAt": "2026-10-01T09:30:00.000Z",
-      "content": "# Runbook: Production Incident Triage & Log Inspection\n\n## 1. Incident Severity Classification\n- **P1 (Critical)**: Gateway outage, auth failure blocking > 20% of users, database deadlock. Response time: < 15 minutes.\n- **P2 (Major)**: Degraded performance, websocket memory leaks, delayed OTP dispatches. Response time: < 1 hour.\n- **P3 (Minor)**: UI cosmetic bugs, non-blocking report calculation errors. Response time: Next business day.\n\n## 2. Immediate Triage Checklist\n1. Check Kubernetes pods: `kubectl get pods -n production`\n2. Inspect gateway error rates on Grafana / Datadog dashboard.\n3. Check memory leak diagnostics for node socket workers.\n4. If JWT rotation causes 401 storms, review clock skew tolerances (refer to RFC in doc-1).\n\n## 3. Rollback Procedure\nIf a production deployment introduces critical regressions:\n```bash\n# Trigger automated canary rollback\nhelm rollback wezblue-prod-release -n production\n```\n\n## 4. Related Tickets\n- **WEZ-102**: Token rotation race conditions.\n- **WEZ-110**: Websocket memory leak remediation."
-    },
-    {
-      "id": "doc-6",
-      "spaceId": "space-ops",
-      "title": "Sprint 23 Retrospective & Performance Outcomes",
-      "excerpt": "Team retrospective review for Sprint 23 covering 28 velocity points, lessons learned, and action items.",
-      "status": "ARCHIVED",
-      "category": "RETROSPECTIVE",
-      "authorId": "user-2",
-      "linkedIssueKeys": [
-        "WEZ-104",
-        "WEZ-105"
-      ],
-      "createdAt": "2026-09-14T17:00:00.000Z",
-      "updatedAt": "2026-09-15T09:00:00.000Z",
-      "content": "# Sprint 23 Retrospective & Performance Outcomes\n\n## 1. Sprint Summary\n- **Sprint Name**: Wezblue Sprint 23 - Core Auth & Cloud Infrastructure\n- **Velocity Delivered**: 28 Story Points (Target: 30)\n- **Completed Issues**: WEZ-104 (Database migration), WEZ-105 (Docker containerization)\n\n## 2. What Went Well\n- Database indexing on tenant tables reduced p99 query latency from 320ms to 42ms.\n- Excellent collaboration between Alex Rivera and Elena Rostova on the OTP specification.\n\n## 3. What Needs Improvement\n- QA testing was compressed into the final 2 days of the sprint.\n- Redis connection limits were reached in staging due to unbounded socket intervals.\n\n## 4. Action Items for Wezblue Sprint 24\n- Prioritize WEZ-110 (WebSocket memory leak fix) early in the sprint.\n- Enforce dual estimation (Story points + Hours) at sprint planning."
-    }
-  ],
+  "docs": [],
   "currentUser": {
-    "id": "user-1",
-    "email": "sarah.admin@wezblue.com",
-    "name": "Sarah Jenkins",
-    "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+    "id": "user-jayasree",
+    "email": "jayasree.kuniyil@wezblue.com",
+    "name": "Jayasree Kuniyil",
+    "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
     "role": "ADMIN",
-    "department": "Executive & DevOps",
+    "jobTitle": "Project Manager",
+    "department": "Project Management",
     "password": "Wezblue@123",
-    "createdAt": "2026-01-10T08:00:00.000Z",
-    "updatedAt": "2026-09-01T08:00:00.000Z"
+    "createdAt": "2026-01-01T08:00:00.000Z",
+    "updatedAt": "2026-10-01T08:00:00.000Z"
   }
 }

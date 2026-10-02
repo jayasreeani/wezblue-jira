@@ -72,10 +72,12 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User>({
-    id: 'user-1',
-    email: 'sarah.admin@wezblue.com',
-    name: 'Sarah Jenkins',
+    id: 'user-jayasree',
+    email: 'jayasree.kuniyil@wezblue.com',
+    name: 'Jayasree Kuniyil',
     role: 'ADMIN',
+    jobTitle: 'Project Manager',
+    department: 'Project Management',
     createdAt: '',
     updatedAt: '',
   });

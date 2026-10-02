@@ -180,7 +180,7 @@ export default function LoginPage() {
               Quick 1-Click Persona Sign-In:
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {users.slice(0, 4).map(u => (
+              {users.slice(0, 6).map(u => (
                 <button
                   key={u.id}
                   type="button"
@@ -197,7 +197,7 @@ export default function LoginPage() {
                       {u.name}
                     </div>
                     <div className="text-[9px] text-slate-400 font-semibold truncate">
-                      {u.role}
+                      {u.role === 'ADMIN' ? `${u.jobTitle || 'Admin'} (Admin)` : (u.jobTitle || u.role)}
                     </div>
                   </div>
                 </button>

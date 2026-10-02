@@ -31,6 +31,7 @@ export interface User {
   name: string;
   avatar?: string;
   role: Role;
+  jobTitle?: string;
   department?: string;
   password?: string;
   createdAt: string;
