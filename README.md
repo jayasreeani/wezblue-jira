@@ -1,6 +1,8 @@
-# Nova Enterprise Project Management SaaS Platform (Jira Clone)
+# Wezblue Enterprise Jira & Confluence SaaS Platform
 
-A modern, full-featured enterprise Agile & DevOps Project Management SaaS platform modeled after Atlassian Jira. Built with Next.js 14 (App Router), React 18, Tailwind CSS, and a comprehensive PostgreSQL relational database schema via Prisma.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjayasreeani%2Fwezblue-jira)
+
+A modern, full-featured enterprise Agile & DevOps Project Management SaaS platform built for **Wezblue**. Featuring **Jira Project Management**, **Confluence Documentation Spaces**, and the in-house **WezAI Assistant**. Built with Next.js 14 (App Router), React 18, Tailwind CSS, Prisma ORM, and PostgreSQL.
 
 ---
 
