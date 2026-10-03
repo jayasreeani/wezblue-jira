@@ -6,6 +6,7 @@ import {
   Role, IssueStatus, ROLE_PERMISSIONS, RolePermissions,
   ConfluenceSpace, ConfluenceDoc, RovoMessage, RovoSource
 } from '@/lib/types';
+import { INITIAL_USERS } from '@/lib/seed-data';
 
 interface AppContextType {
   currentUser: User;
@@ -61,7 +62,7 @@ interface AppContextType {
 
   // Authentication
   isAuthenticated: boolean;
-  login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password?: string, quickLogin?: boolean, userId?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 
   // Confluence Documentation
@@ -99,7 +100,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     createdAt: '',
     updatedAt: '',
   });
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentProject, setCurrentProject] = useState<Project>({
     id: 'proj-1',
@@ -127,8 +128,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('wezblue_auth');
+      const storedUserId = localStorage.getItem('wezblue_user_id');
       if (stored === 'true') {
         setIsAuthenticated(true);
+      }
+      if (storedUserId) {
+        const found = INITIAL_USERS.find(u => u.id === storedUserId);
+        if (found) {
+          setCurrentUser(found);
+        }
       }
     }
   }, []);
@@ -264,8 +272,11 @@ Ask me anything about:
 
   const refreshData = async () => {
     try {
+      const storedUserId = typeof window !== 'undefined' ? localStorage.getItem('wezblue_user_id') : currentUser.id;
+      const authUrl = storedUserId ? `/api/auth?userId=${storedUserId}` : '/api/auth';
+
       const [authRes, usersRes, projRes, issuesRes, sprintsRes, epicsRes, actRes, notifRes, spacesRes, docsRes, permsRes] = await Promise.all([
-        fetch('/api/auth'),
+        fetch(authUrl),
         fetch('/api/users'),
         fetch('/api/projects'),
         fetch(`/api/issues?projectId=${currentProject.id}`),
@@ -292,7 +303,11 @@ Ask me anything about:
         permsRes.json(),
       ]);
 
-      if (authData.user) setCurrentUser(authData.user);
+      if (authData.user) {
+        if (!storedUserId || storedUserId === authData.user.id) {
+          setCurrentUser(authData.user);
+        }
+      }
       if (usersData.users) setUsers(usersData.users);
       if (permsData.permissions) setRolePermissions(permsData.permissions);
       if (projData.projects) {
@@ -342,11 +357,14 @@ Ask me anything about:
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId, quickLogin: true }),
       });
       const data = await res.json();
       if (data.user) {
         setCurrentUser(data.user);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('wezblue_user_id', data.user.id);
+        }
         showToast(`Switched persona to ${data.user.name} (${data.user.role})`, 'info');
         refreshData();
       }
@@ -651,12 +669,17 @@ Ask me anything about:
     ]);
   };
 
-  const login = async (email: string, password?: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (
+    email: string, 
+    password?: string, 
+    quickLogin: boolean = false, 
+    userId?: string
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, quickLogin, userId }),
       });
       const data = await res.json();
       if (res.ok && data.user) {
@@ -682,6 +705,7 @@ Ask me anything about:
     if (typeof window !== 'undefined') {
       localStorage.removeItem('wezblue_auth');
       localStorage.removeItem('wezblue_user_id');
+      window.location.href = '/login';
     }
     showToast('Signed out from Wezblue workspace', 'info');
   };

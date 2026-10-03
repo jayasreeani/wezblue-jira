@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import TopNav from '@/components/layout/TopNav';
 import Sidebar from '@/components/layout/Sidebar';
@@ -15,8 +15,15 @@ import LoginPage from '@/components/auth/LoginPage';
 export default function AppLayoutShell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useApp();
   const pathname = usePathname();
+  const router = useRouter();
 
-  if (!isAuthenticated || pathname === '/login') {
+  useEffect(() => {
+    if (isAuthenticated && pathname === '/login') {
+      router.replace('/');
+    }
+  }, [isAuthenticated, pathname, router]);
+
+  if (!isAuthenticated) {
     return (
       <div className="h-screen w-screen overflow-hidden flex flex-col">
         <LoginPage />
