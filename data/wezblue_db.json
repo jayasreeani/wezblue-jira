@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "savedAt": "2026-10-03T14:00:23.623Z",
+  "savedAt": "2026-10-03T14:50:30.347Z",
   "users": [
     {
       "id": "user-jayasree",
@@ -147,6 +147,18 @@
       "velocity": 8,
       "createdAt": "2026-10-03T14:00:23.256Z",
       "updatedAt": "2026-10-03T14:00:23.346Z"
+    },
+    {
+      "id": "sprint-1791036351295",
+      "projectId": "proj-1",
+      "name": "E2E Sprint 1253",
+      "goal": "Complete Payment Gateway and Webhook Verification",
+      "startDate": "2026-10-03T14:05:51.442Z",
+      "endDate": "2026-10-17T14:05:51.277Z",
+      "status": "COMPLETED",
+      "velocity": 8,
+      "createdAt": "2026-10-03T14:05:51.295Z",
+      "updatedAt": "2026-10-03T14:05:51.489Z"
     }
   ],
   "epics": [
@@ -199,6 +211,16 @@
       "status": "IN_PROGRESS",
       "createdAt": "2026-10-03T14:00:22.975Z",
       "updatedAt": "2026-10-03T14:00:22.975Z"
+    },
+    {
+      "id": "epic-1791036350741-b3jy",
+      "projectId": "proj-1",
+      "name": "E2E-Automated-Billing-Engine",
+      "summary": "Automated recurring billing, invoices, and payment webhooks",
+      "color": "#0052cc",
+      "status": "IN_PROGRESS",
+      "createdAt": "2026-10-03T14:05:50.741Z",
+      "updatedAt": "2026-10-03T14:05:50.741Z"
     }
   ],
   "issues": [
@@ -505,9 +527,80 @@
       "workLogs": [],
       "createdAt": "2026-10-03T14:00:23.036Z",
       "updatedAt": "2026-10-03T14:00:23.276Z"
+    },
+    {
+      "id": "issue-1791036350791-1dm9",
+      "key": "WEZ-111",
+      "projectId": "proj-1",
+      "type": "STORY",
+      "summary": "Resident can pay society maintenance via UPI and Stripe",
+      "description": "As a resident, I want to pay maintenance fees securely online.",
+      "status": "DONE",
+      "priority": "HIGH",
+      "storyPoints": 5,
+      "actualPoints": 5,
+      "estimatedHours": 16,
+      "actualHours": 16,
+      "remainingHours": 0,
+      "order": 11,
+      "reporterId": "user-jayasree",
+      "sprintId": "sprint-1791036351295",
+      "epicId": "epic-1791036350741-b3jy",
+      "feature": "Payments",
+      "acceptanceCriteria": "Given valid UPI ID, when payment is submitted, transaction succeeds within 5s.",
+      "phase": "MVP",
+      "actualCompletionDate": "2026-10-03T14:05:51.218Z",
+      "subtasks": [],
+      "comments": [],
+      "attachments": [],
+      "workLogs": [],
+      "createdAt": "2026-10-03T14:05:50.791Z",
+      "updatedAt": "2026-10-03T14:05:51.396Z",
+      "linkedDocIds": [
+        "doc-1791036351622-cezv"
+      ]
+    },
+    {
+      "id": "issue-1791036350850-gaog",
+      "key": "WEZ-112",
+      "projectId": "proj-1",
+      "type": "TASK",
+      "summary": "Implement Stripe Webhook Signature Verification and Idempotency",
+      "description": "Webhook listener verifying crypto signatures and idempotency keys.",
+      "status": "DONE",
+      "priority": "CRITICAL",
+      "storyPoints": 3,
+      "actualPoints": 3,
+      "estimatedHours": 8,
+      "actualHours": 8,
+      "remainingHours": 0,
+      "parentStoryId": "issue-1791036350791-1dm9",
+      "order": 12,
+      "assigneeId": "user-althaf",
+      "reporterId": "user-jayasree",
+      "sprintId": "sprint-1791036351295",
+      "epicId": "epic-1791036350741-b3jy",
+      "feature": "Payments",
+      "phase": "MVP",
+      "actualCompletionDate": "2026-10-03T14:05:51.167Z",
+      "subtasks": [],
+      "comments": [],
+      "attachments": [],
+      "workLogs": [],
+      "createdAt": "2026-10-03T14:05:50.850Z",
+      "updatedAt": "2026-10-03T14:05:51.348Z"
     }
   ],
   "notifications": [
+    {
+      "userId": "user-althaf",
+      "title": "Issue Assigned",
+      "message": "Jayasree Kuniyil assigned you to WEZ-112",
+      "link": "WEZ-112",
+      "id": "notif-1791036350945",
+      "read": false,
+      "createdAt": "2026-10-03T14:05:50.945Z"
+    },
     {
       "userId": "user-althaf",
       "title": "Issue Assigned",
@@ -555,6 +648,114 @@
     }
   ],
   "activityLogs": [
+    {
+      "projectId": "proj-1",
+      "issueId": "issue-1791036350791-1dm9",
+      "issueKey": "WEZ-111",
+      "userId": "user-jayasree",
+      "action": "STATUS_CHANGE",
+      "fieldChanged": "status",
+      "oldValue": "TODO",
+      "newValue": "DONE",
+      "id": "act-1791036351236-in0u",
+      "createdAt": "2026-10-03T14:05:51.236Z"
+    },
+    {
+      "projectId": "proj-1",
+      "issueId": "issue-1791036350850-gaog",
+      "issueKey": "WEZ-112",
+      "userId": "user-jayasree",
+      "action": "STATUS_CHANGE",
+      "fieldChanged": "status",
+      "oldValue": "IN_STAKEHOLDER_VALIDATION",
+      "newValue": "DONE",
+      "id": "act-1791036351183-kb8a",
+      "createdAt": "2026-10-03T14:05:51.184Z"
+    },
+    {
+      "projectId": "proj-1",
+      "issueId": "issue-1791036350850-gaog",
+      "issueKey": "WEZ-112",
+      "userId": "user-jayasree",
+      "action": "STATUS_CHANGE",
+      "fieldChanged": "status",
+      "oldValue": "IN_QA",
+      "newValue": "IN_STAKEHOLDER_VALIDATION",
+      "id": "act-1791036351134-di3v",
+      "createdAt": "2026-10-03T14:05:51.134Z"
+    },
+    {
+      "projectId": "proj-1",
+      "issueId": "issue-1791036350850-gaog",
+      "issueKey": "WEZ-112",
+      "userId": "user-jayasree",
+      "action": "STATUS_CHANGE",
+      "fieldChanged": "status",
+      "oldValue": "UNDER_REVIEW",
+      "newValue": "IN_QA",
+      "id": "act-1791036351089-p0tz",
+      "createdAt": "2026-10-03T14:05:51.089Z"
+    },
+    {
+      "projectId": "proj-1",
+      "issueId": "issue-1791036350850-gaog",
+      "issueKey": "WEZ-112",
+      "userId": "user-jayasree",
+      "action": "STATUS_CHANGE",
+      "fieldChanged": "status",
+      "oldValue": "IN_PROGRESS",
+      "newValue": "UNDER_REVIEW",
+      "id": "act-1791036351042-m2wk",
+      "createdAt": "2026-10-03T14:05:51.042Z"
+    },
+    {
+      "projectId": "proj-1",
+      "issueId": "issue-1791036350850-gaog",
+      "issueKey": "WEZ-112",
+      "userId": "user-jayasree",
+      "action": "STATUS_CHANGE",
+      "fieldChanged": "status",
+      "oldValue": "TODO",
+      "newValue": "IN_PROGRESS",
+      "id": "act-1791036350996-swgd",
+      "createdAt": "2026-10-03T14:05:50.996Z"
+    },
+    {
+      "projectId": "proj-1",
+      "issueId": "issue-1791036350850-gaog",
+      "issueKey": "WEZ-112",
+      "userId": "user-jayasree",
+      "action": "ASSIGNED",
+      "fieldChanged": "assignee",
+      "oldValue": "Unassigned",
+      "newValue": "user-althaf",
+      "id": "act-1791036350945-7s0t",
+      "createdAt": "2026-10-03T14:05:50.945Z"
+    },
+    {
+      "projectId": "proj-1",
+      "issueId": "issue-1791036350850-gaog",
+      "issueKey": "WEZ-112",
+      "userId": "user-jayasree",
+      "action": "ISSUE_CREATED",
+      "fieldChanged": "summary",
+      "oldValue": "",
+      "newValue": "Implement Stripe Webhook Signature Verification and Idempotency",
+      "id": "act-1791036350871-cecu",
+      "createdAt": "2026-10-03T14:05:50.871Z"
+    },
+    {
+      "projectId": "proj-1",
+      "issueId": "issue-1791036350791-1dm9",
+      "issueKey": "WEZ-111",
+      "userId": "user-jayasree",
+      "action": "ISSUE_CREATED",
+      "fieldChanged": "summary",
+      "oldValue": "",
+      "newValue": "Resident can pay society maintenance via UPI and Stripe",
+      "id": "act-1791036350806-72ui",
+      "createdAt": "2026-10-03T14:05:50.806Z"
+    },
     {
       "projectId": "proj-1",
       "issueId": "issue-1791036023007-zehi",
@@ -1129,6 +1330,22 @@
     }
   ],
   "docs": [
+    {
+      "id": "doc-1791036351622-cezv",
+      "spaceId": "space-eng",
+      "title": "E2E Testing Spec & Architecture Runbook",
+      "content": "# E2E Spec\n\nAutomated testing documentation.",
+      "excerpt": "E2E Spec\n\nAutomated testing documentation....",
+      "status": "PUBLISHED",
+      "category": "RUNBOOK",
+      "authorId": "user-jayasree",
+      "linkedIssueKeys": [
+        "WEZ-111"
+      ],
+      "createdAt": "2026-10-03T14:05:51.622Z",
+      "updatedAt": "2026-10-03T14:05:51.685Z",
+      "attachments": []
+    },
     {
       "id": "doc-1791036023446-bu0c",
       "spaceId": "space-eng",

@@ -9,15 +9,15 @@ import {
 } from 'lucide-react';
 import { ROLE_COLORS, ROLE_LABELS, Role } from '@/lib/types';
 import ProfileSettingsModal from '@/components/users/ProfileSettingsModal';
-import TeamPersonasModal from '@/components/users/TeamPersonasModal';
 
 export default function TopNav() {
   const { 
-    currentUser, switchUser, users, projects, currentProject, 
+    currentUser, users, projects, currentProject, 
     setCurrentProject, setIsCreateModalOpen, setIsSearchOpen, 
-    setIsBulkUploadOpen, notifications, markNotificationRead, markAllNotificationsRead,
+    setIsBulkUploadOpen, setIsCreateProjectModalOpen, notifications, 
+    markNotificationRead, markAllNotificationsRead,
     setSelectedIssue, issues, permissions, activeView, setActiveView, setIsRovoOpen, logout,
-    isProfileModalOpen, setIsProfileModalOpen, isPersonasModalOpen, setIsPersonasModalOpen
+    isProfileModalOpen, setIsProfileModalOpen
   } = useApp();
 
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -81,6 +81,20 @@ export default function TopNav() {
                   {currentProject?.id === p.id && <Check className="w-4 h-4 text-jira-brand" />}
                 </button>
               ))}
+
+              <div className="border-t border-slate-100 p-1.5 bg-slate-50/70">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProjMenu(false);
+                    setIsCreateProjectModalOpen(true);
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs font-bold text-jira-brand hover:bg-blue-50 rounded-md flex items-center space-x-2 transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create New Project</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -143,22 +157,6 @@ export default function TopNav() {
           </span>
         </button>
 
-        {/* Team Personas Directory Launcher - Admin RBAC Simulator Mode */}
-        {currentUser.role === 'ADMIN' && (
-          <button
-            onClick={() => setIsPersonasModalOpen(true)}
-            className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition shadow-2xs shrink-0 ${
-              isPersonasModalOpen
-                ? 'bg-indigo-50 text-indigo-700 border-indigo-300'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border-jira-border'
-            }`}
-            title="Admin RBAC Simulator: Test permission boundaries across team personas"
-          >
-            <Shield className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-            <span className="hidden md:inline">Admin Simulator</span>
-            <span className="text-[9px] px-1 rounded bg-indigo-100 text-indigo-800 font-bold">RBAC</span>
-          </button>
-        )}
 
         {/* Notifications Popover */}
         <div className="relative">
@@ -269,53 +267,6 @@ export default function TopNav() {
                 </button>
               </div>
 
-              {currentUser?.role === 'ADMIN' && (
-                <>
-                  <div className="px-3.5 py-1.5 bg-indigo-50/50 border-b border-jira-border flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-indigo-900 uppercase">
-                      Admin RBAC Simulator:
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowUserMenu(false);
-                        setIsPersonasModalOpen(true);
-                      }}
-                      className="text-[10px] text-jira-brand hover:underline font-bold"
-                    >
-                      View All
-                    </button>
-                  </div>
-
-                  <div className="max-h-64 overflow-y-auto divide-y divide-slate-50 py-1">
-                    {users.map(u => (
-                      <button
-                        key={u.id}
-                        onClick={() => {
-                          switchUser(u.id);
-                          setShowUserMenu(false);
-                        }}
-                        className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between hover:bg-blue-50 transition ${currentUser?.id === u.id ? 'bg-blue-50/70 font-semibold' : ''}`}
-                      >
-                        <div className="flex items-center space-x-2.5">
-                          <img src={u.avatar} alt={u.name} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
-                          <div>
-                            <div className="text-xs text-jira-text font-medium leading-none">{u.name}</div>
-                            <div className="flex items-center space-x-1.5 mt-1">
-                              <span className={`text-[9px] px-1 py-0.2 rounded font-bold border ${ROLE_COLORS[u.role] || 'bg-slate-100'}`}>
-                                {u.jobTitle || ROLE_LABELS[u.role] || u.role}
-                              </span>
-                              <span className="text-[10px] text-slate-400 truncate max-w-[100px]">{u.department}</span>
-                            </div>
-                          </div>
-                        </div>
-                        {currentUser?.id === u.id && <Check className="w-4 h-4 text-jira-brand" />}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-
               <div className="p-2 border-t border-jira-border bg-slate-50">
                 <button
                   type="button"
@@ -338,11 +289,6 @@ export default function TopNav() {
       <ProfileSettingsModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
-      />
-      <TeamPersonasModal
-        isOpen={isPersonasModalOpen}
-        onClose={() => setIsPersonasModalOpen(false)}
-        onOpenProfile={() => setIsProfileModalOpen(true)}
       />
     </header>
   );

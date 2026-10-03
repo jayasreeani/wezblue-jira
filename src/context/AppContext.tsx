@@ -50,11 +50,9 @@ interface AppContextType {
   toast: { message: string; type: 'success' | 'info' | 'error' } | null;
   showToast: (message: string, type?: 'success' | 'info' | 'error') => void;
 
-  // Profile & Personas Modals
+  // Profile Modal
   isProfileModalOpen: boolean;
   setIsProfileModalOpen: (open: boolean) => void;
-  isPersonasModalOpen: boolean;
-  setIsPersonasModalOpen: (open: boolean) => void;
   updateCurrentUserProfile: (data: {
     name?: string;
     avatar?: string;
@@ -70,8 +68,11 @@ interface AppContextType {
   logout: () => void;
 
   // Projects
+  createProject: (data: Partial<Project>) => Promise<Project | null>;
   updateProject: (id: string, updates: Partial<Project>) => Promise<Project | null>;
   deleteProject: (id: string) => Promise<boolean>;
+  isCreateProjectModalOpen: boolean;
+  setIsCreateProjectModalOpen: (open: boolean) => void;
 
   // Confluence Documentation
   spaces: ConfluenceSpace[];
@@ -169,6 +170,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (Array.isArray(cachedEpics) && cachedEpics.length > 0) {
           setEpics(cachedEpics);
         }
+        const cachedProjects = JSON.parse(localStorage.getItem('wezblue_projects_cache') || '[]');
+        if (Array.isArray(cachedProjects) && cachedProjects.length > 0) {
+          setProjects(cachedProjects);
+        }
       } catch (e) {}
     }
   }, []);
@@ -198,7 +203,7 @@ Ask me anything about:
 
   const [rolePermissions, setRolePermissions] = useState<Record<Role, RolePermissions>>(ROLE_PERMISSIONS);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isPersonasModalOpen, setIsPersonasModalOpen] = useState(false);
+  const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
 
   const permissions = (rolePermissions && rolePermissions[currentUser.role]) || ROLE_PERMISSIONS[currentUser.role] || ROLE_PERMISSIONS.VIEWER;
 
@@ -353,11 +358,24 @@ Ask me anything about:
       }
       if (usersData.users) setUsers(usersData.users);
       if (permsData.permissions) setRolePermissions(permsData.permissions);
-      if (projData.projects && projData.projects.length > 0) {
-        setProjects(projData.projects);
-        const exists = projData.projects.find((p: Project) => p.id === currentProject?.id);
+      // Intelligent merge for projects: Server projects + client-cached projects
+      let finalProjects = projData.projects || [];
+      if (typeof window !== 'undefined') {
+        try {
+          const cachedProjects = JSON.parse(localStorage.getItem('wezblue_projects_cache') || '[]');
+          if (Array.isArray(cachedProjects) && cachedProjects.length > 0) {
+            const serverProjIds = new Set(finalProjects.map((p: any) => p.id));
+            const localOnly = cachedProjects.filter((p: any) => !serverProjIds.has(p.id));
+            finalProjects = [...finalProjects, ...localOnly];
+          }
+          localStorage.setItem('wezblue_projects_cache', JSON.stringify(finalProjects));
+        } catch (e) {}
+      }
+      if (finalProjects.length > 0) {
+        setProjects(finalProjects);
+        const exists = finalProjects.find((p: Project) => p.id === currentProject?.id);
         if (!exists) {
-          setCurrentProject(projData.projects[0]);
+          setCurrentProject(finalProjects[0]);
         }
       }
       // Intelligent merge for issues: Server issues + client-cached issues
@@ -916,6 +934,38 @@ Ask me anything about:
   };
 
   // Project Management
+  const createProject = async (data: Partial<Project>): Promise<Project | null> => {
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const resData = await res.json();
+      if (res.ok && resData.project) {
+        const newProj: Project = resData.project;
+        setProjects(prev => {
+          const next = [...prev.filter(p => p.id !== newProj.id), newProj];
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('wezblue_projects_cache', JSON.stringify(next));
+            } catch {}
+          }
+          return next;
+        });
+        setCurrentProject(newProj);
+        showToast(`Project ${newProj.name} (${newProj.key}) created successfully!`, 'success');
+        setIsCreateProjectModalOpen(false);
+        return newProj;
+      }
+      showToast(resData.error || 'Failed to create project', 'error');
+      return null;
+    } catch {
+      showToast('Error creating project', 'error');
+      return null;
+    }
+  };
+
   const updateProject = async (id: string, updates: Partial<Project>): Promise<Project | null> => {
     try {
       const res = await fetch(`/api/projects/${id}`, {
@@ -925,7 +975,15 @@ Ask me anything about:
       });
       const data = await res.json();
       if (res.ok && data.project) {
-        setProjects(prev => prev.map(p => p.id === id ? data.project : p));
+        setProjects(prev => {
+          const next = prev.map(p => p.id === id ? data.project : p);
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('wezblue_projects_cache', JSON.stringify(next));
+            } catch {}
+          }
+          return next;
+        });
         if (currentProject.id === id) {
           setCurrentProject(data.project);
         }
@@ -947,6 +1005,11 @@ Ask me anything about:
       if (res.ok) {
         const remaining = projects.filter(p => p.id !== id);
         setProjects(remaining);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('wezblue_projects_cache', JSON.stringify(remaining));
+          } catch {}
+        }
         if (currentProject.id === id) {
           if (remaining.length > 0) {
             setCurrentProject(remaining[0]);
@@ -1259,11 +1322,9 @@ Ask me anything about:
         toast,
         showToast,
 
-        // Profile & Personas
+        // Profile Modal
         isProfileModalOpen,
         setIsProfileModalOpen,
-        isPersonasModalOpen,
-        setIsPersonasModalOpen,
         updateCurrentUserProfile,
 
         // Authentication
@@ -1272,8 +1333,11 @@ Ask me anything about:
         logout,
 
         // Projects
+        createProject,
         updateProject,
         deleteProject,
+        isCreateProjectModalOpen,
+        setIsCreateProjectModalOpen,
 
         // Confluence
         spaces,

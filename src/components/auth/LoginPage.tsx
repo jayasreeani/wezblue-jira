@@ -6,23 +6,17 @@ import {
   Layers, Lock, Mail, Eye, EyeOff, ArrowRight, 
   ShieldCheck, Sparkles, CheckCircle2, AlertCircle, Info, BookOpen 
 } from 'lucide-react';
-import { INITIAL_USERS } from '@/lib/seed-data';
-import { User } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { login, users, isAuthenticated } = useApp();
+  const { login, isAuthenticated } = useApp();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('Wezblue@123');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [signingInPersonaId, setSigningInPersonaId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
-
-  // Fallback to INITIAL_USERS if users array from server is still loading
-  const displayUsers = (users && users.length > 0) ? users.slice(0, 6) : INITIAL_USERS.slice(0, 6);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -45,29 +39,6 @@ export default function LoginPage() {
       setIsLoading(false);
     } else {
       window.location.href = '/';
-    }
-  };
-
-  const handleSelectPersona = async (persona: User) => {
-    setErrorMsg('');
-    setSigningInPersonaId(persona.id);
-    setIsLoading(true);
-    setEmail(persona.email);
-
-    try {
-      const res = await login(persona.email, persona.password || 'Wezblue@123', true, persona.id);
-      if (!res.success) {
-        setErrorMsg(res.error || 'Failed to sign in as persona.');
-        setIsLoading(false);
-        setSigningInPersonaId(null);
-      } else {
-        // Direct hard navigation to guarantee clean dashboard load
-        window.location.href = '/';
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Error authenticating persona.');
-      setIsLoading(false);
-      setSigningInPersonaId(null);
     }
   };
 
@@ -180,7 +151,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-jira-brand to-blue-600 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-xs shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2 disabled:opacity-70"
             >
-              {isLoading && !signingInPersonaId ? (
+              {isLoading ? (
                 <>
                   <Sparkles className="w-4 h-4 animate-spin text-yellow-300" />
                   <span>Signing in...</span>
@@ -193,63 +164,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Quick Persona Logins */}
-          <div className="pt-3 border-t border-slate-100">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Quick 1-Click Persona Sign-In:
-              </span>
-              <span className="text-[10px] text-jira-brand font-semibold">
-                Click any persona to enter
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {displayUsers.map(u => {
-                const isThisPersonaSigningIn = signingInPersonaId === u.id;
-                return (
-                  <button
-                    key={u.id}
-                    type="button"
-                    disabled={isLoading}
-                    onClick={() => handleSelectPersona(u)}
-                    className={`p-2 rounded-xl border transition text-left flex items-center space-x-2 group relative overflow-hidden ${
-                      isThisPersonaSigningIn
-                        ? 'bg-blue-50 border-jira-brand ring-2 ring-jira-brand shadow-sm'
-                        : 'border-slate-200 hover:border-blue-400 bg-slate-50/80 hover:bg-blue-50/60 shadow-2xs hover:shadow-xs'
-                    } ${isLoading && !isThisPersonaSigningIn ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-                  >
-                    <div className="relative flex-shrink-0">
-                      <img
-                        src={u.avatar}
-                        alt={u.name}
-                        className="w-7 h-7 rounded-full object-cover border border-slate-200"
-                      />
-                      {isThisPersonaSigningIn && (
-                        <div className="absolute inset-0 bg-blue-600/40 rounded-full flex items-center justify-center">
-                          <Sparkles className="w-3.5 h-3.5 text-white animate-spin" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[11px] font-bold text-slate-800 truncate group-hover:text-jira-brand flex items-center space-x-1">
-                        <span>{u.name}</span>
-                      </div>
-                      <div className="text-[9px] text-slate-500 font-semibold truncate">
-                        {u.role === 'ADMIN' ? `${u.jobTitle || 'Admin'} (Admin)` : (u.jobTitle || u.role)}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            {signingInPersonaId && (
-              <div className="mt-2 text-center text-xs text-jira-brand font-bold animate-pulse flex items-center justify-center space-x-1.5">
-                <Sparkles className="w-3.5 h-3.5 animate-spin text-jira-brand" />
-                <span>Entering workspace as selected persona...</span>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Footer */}

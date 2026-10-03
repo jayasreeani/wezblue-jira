@@ -424,11 +424,13 @@ class JiraDataStore {
   getProjects() { return this.projects; }
   getProjectById(id: string) { return this.projects.find(p => p.id === id || p.key === id); }
   createProject(data: Partial<Project>) {
+    const rawKey = (data.key || 'PRJ').toUpperCase().trim();
+    const cleanKey = rawKey.replace(/[^A-Z0-9]/g, '') || 'PRJ';
     const newProj: Project = {
-      id: 'proj-' + (this.projects.length + 1),
-      key: (data.key || 'PRJ').toUpperCase(),
-      name: data.name || 'New Project',
-      description: data.description || '',
+      id: data.id || `proj-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      key: cleanKey,
+      name: (data.name || 'New Project').trim(),
+      description: (data.description || '').trim(),
       template: data.template || 'SCRUM',
       leadId: data.leadId || this.currentUser.id,
       createdAt: new Date().toISOString(),

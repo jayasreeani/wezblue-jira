@@ -11,14 +11,9 @@ import {
 export default function ProjectSettingsView() {
   const { 
     currentProject, projects, setCurrentProject, permissions, 
-    refreshData, showToast, updateProject, deleteProject 
+    refreshData, showToast, updateProject, deleteProject,
+    setIsCreateProjectModalOpen
   } = useApp();
-
-  const [isCreateProjOpen, setIsCreateProjOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [key, setKey] = useState('');
-  const [description, setDescription] = useState('');
-  const [template, setTemplate] = useState<ProjectTemplate>('SCRUM');
 
   // Edit Project State
   const [isEditProjOpen, setIsEditProjOpen] = useState(false);
@@ -71,35 +66,6 @@ export default function ProjectSettingsView() {
     }
   };
 
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !key.trim()) return;
-
-    try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          key: key.trim().toUpperCase(),
-          description: description.trim(),
-          template,
-        }),
-      });
-      const data = await res.json();
-      if (data.project) {
-        showToast(`Project ${data.project.name} (${data.project.key}) created`, 'success');
-        setCurrentProject(data.project);
-        setName('');
-        setKey('');
-        setDescription('');
-        setIsCreateProjOpen(false);
-        refreshData();
-      }
-    } catch (err) {
-      showToast('Failed to create project', 'error');
-    }
-  };
 
   const handleOpenEdit = (p: Project, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -170,7 +136,7 @@ export default function ProjectSettingsView() {
 
         {permissions.canCreateProject && (
           <button
-            onClick={() => setIsCreateProjOpen(true)}
+            onClick={() => setIsCreateProjectModalOpen(true)}
             className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-jira-brand hover:bg-jira-brandHover text-white text-xs font-semibold rounded-md shadow-xs transition"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -254,7 +220,19 @@ export default function ProjectSettingsView() {
             <Layers className="w-4 h-4 text-jira-brand" />
             <h3 className="font-bold text-sm text-jira-text">All Tenant Projects ({projects.length})</h3>
           </div>
-          <span className="text-[11px] text-slate-500">Click a project row to switch active workspace</span>
+          <div className="flex items-center space-x-3">
+            <span className="text-[11px] text-slate-500">Click a project row to switch active workspace</span>
+            {permissions.canCreateProject && (
+              <button
+                type="button"
+                onClick={() => setIsCreateProjectModalOpen(true)}
+                className="flex items-center space-x-1 px-2.5 py-1 bg-jira-brand hover:bg-jira-brandHover text-white rounded text-xs font-bold transition shadow-2xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Project</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="divide-y divide-slate-100 text-xs">
@@ -376,104 +354,6 @@ export default function ProjectSettingsView() {
         </div>
       </div>
 
-      {/* Create Project Modal */}
-      {isCreateProjOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <form onSubmit={handleCreateProject} className="w-full max-w-md bg-white rounded-xl shadow-2xl border border-jira-border p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-jira-text">Create Project</h2>
-              <button type="button" onClick={() => setIsCreateProjOpen(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-jira-subtle mb-1">Project Name *</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={e => {
-                  setName(e.target.value);
-                  if (!key) setKey(e.target.value.slice(0, 4).toUpperCase());
-                }}
-                placeholder="e.g. Phoenix Analytics Engine"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none font-medium"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-jira-subtle mb-1">Project Key (Prefix for issues) *</label>
-              <input
-                type="text"
-                required
-                maxLength={8}
-                value={key}
-                onChange={e => setKey(e.target.value.toUpperCase())}
-                placeholder="e.g. PHX"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none font-bold uppercase"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-jira-subtle mb-1">Description</label>
-              <textarea
-                rows={2}
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="Brief summary of project domain and scope..."
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-jira-subtle mb-1">Template</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setTemplate('SCRUM')}
-                  className={`p-2.5 rounded-lg border text-left text-xs transition ${
-                    template === 'SCRUM'
-                      ? 'border-jira-brand bg-blue-50 text-jira-brand font-bold'
-                      : 'border-slate-200 text-slate-700'
-                  }`}
-                >
-                  <div className="font-bold">Scrum</div>
-                  <div className="text-[10px] text-slate-500 font-normal">Sprints & Burndown</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTemplate('KANBAN')}
-                  className={`p-2.5 rounded-lg border text-left text-xs transition ${
-                    template === 'KANBAN'
-                      ? 'border-jira-brand bg-blue-50 text-jira-brand font-bold'
-                      : 'border-slate-200 text-slate-700'
-                  }`}
-                >
-                  <div className="font-bold">Kanban</div>
-                  <div className="text-[10px] text-slate-500 font-normal">Continuous Flow</div>
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-200">
-              <button
-                type="button"
-                onClick={() => setIsCreateProjOpen(false)}
-                className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-1.5 bg-jira-brand hover:bg-jira-brandHover text-white text-xs font-bold rounded shadow-xs"
-              >
-                Create Project
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {/* Edit Project Modal */}
       {isEditProjOpen && projectToEdit && (
