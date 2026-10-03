@@ -38,8 +38,26 @@ interface AppContextType {
   markNotificationRead: (id: string) => Promise<void>;
   markAllNotificationsRead: () => Promise<void>;
   permissions: RolePermissions;
+  rolePermissions: Record<Role, RolePermissions>;
+  updateRolePermission: (role: Role, key: keyof RolePermissions, value: boolean) => Promise<void>;
+  saveAllRolePermissions: (permissions: Record<Role, RolePermissions>) => Promise<boolean>;
+  resetRolePermissions: () => Promise<void>;
   toast: { message: string; type: 'success' | 'info' | 'error' } | null;
   showToast: (message: string, type?: 'success' | 'info' | 'error') => void;
+
+  // Profile & Personas Modals
+  isProfileModalOpen: boolean;
+  setIsProfileModalOpen: (open: boolean) => void;
+  isPersonasModalOpen: boolean;
+  setIsPersonasModalOpen: (open: boolean) => void;
+  updateCurrentUserProfile: (data: {
+    name?: string;
+    avatar?: string;
+    jobTitle?: string;
+    department?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
 
   // Authentication
   isAuthenticated: boolean;
@@ -137,7 +155,11 @@ Ask me anything about:
     }
   ]);
 
-  const permissions = ROLE_PERMISSIONS[currentUser.role] || ROLE_PERMISSIONS.VIEWER;
+  const [rolePermissions, setRolePermissions] = useState<Record<Role, RolePermissions>>(ROLE_PERMISSIONS);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isPersonasModalOpen, setIsPersonasModalOpen] = useState(false);
+
+  const permissions = (rolePermissions && rolePermissions[currentUser.role]) || ROLE_PERMISSIONS[currentUser.role] || ROLE_PERMISSIONS.VIEWER;
 
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'info') => {
     setToast({ message, type });
@@ -146,9 +168,103 @@ Ask me anything about:
     }, 4000);
   };
 
+  const updateRolePermission = async (role: Role, key: keyof RolePermissions, value: boolean) => {
+    setRolePermissions(prev => ({
+      ...prev,
+      [role]: {
+        ...prev[role],
+        [key]: value,
+      },
+    }));
+
+    try {
+      const res = await fetch('/api/roles/permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ singleRole: role, permissionKey: key, value }),
+      });
+      const data = await res.json();
+      if (data.permissions) {
+        setRolePermissions(data.permissions);
+      }
+      showToast(`Updated capability for ${role}`, 'success');
+    } catch (e) {
+      showToast('Failed to update permission', 'error');
+    }
+  };
+
+  const saveAllRolePermissions = async (newPermissions: Record<Role, RolePermissions>): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/roles/permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ permissions: newPermissions }),
+      });
+      const data = await res.json();
+      if (res.ok && data.permissions) {
+        setRolePermissions(data.permissions);
+        showToast('Permission schemes saved successfully!', 'success');
+        return true;
+      }
+      showToast(data.error || 'Failed to save permissions', 'error');
+      return false;
+    } catch (e: any) {
+      showToast(e.message || 'Error saving permissions', 'error');
+      return false;
+    }
+  };
+
+  const resetRolePermissions = async () => {
+    try {
+      const res = await fetch('/api/roles/permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reset: true }),
+      });
+      const data = await res.json();
+      if (res.ok && data.permissions) {
+        setRolePermissions(data.permissions);
+        showToast('Permissions reset to Jira defaults', 'info');
+      }
+    } catch (e) {
+      showToast('Failed to reset permissions', 'error');
+    }
+  };
+
+  const updateCurrentUserProfile = async (data: {
+    name?: string;
+    avatar?: string;
+    jobTitle?: string;
+    department?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/users/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          ...data,
+        }),
+      });
+      const resData = await res.json();
+      if (!res.ok) {
+        return { success: false, error: resData.error || 'Failed to update profile' };
+      }
+      if (resData.user) {
+        setCurrentUser(resData.user);
+        setUsers(prev => prev.map(u => u.id === resData.user.id ? resData.user : u));
+      }
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Failed to update profile' };
+    }
+  };
+
   const refreshData = async () => {
     try {
-      const [authRes, usersRes, projRes, issuesRes, sprintsRes, epicsRes, actRes, notifRes, spacesRes, docsRes] = await Promise.all([
+      const [authRes, usersRes, projRes, issuesRes, sprintsRes, epicsRes, actRes, notifRes, spacesRes, docsRes, permsRes] = await Promise.all([
         fetch('/api/auth'),
         fetch('/api/users'),
         fetch('/api/projects'),
@@ -159,9 +275,10 @@ Ask me anything about:
         fetch('/api/notifications'),
         fetch('/api/confluence/spaces'),
         fetch('/api/confluence/docs'),
+        fetch('/api/roles/permissions'),
       ]);
 
-      const [authData, usersData, projData, issuesData, sprintsData, epicsData, actData, notifData, spacesData, docsData] = await Promise.all([
+      const [authData, usersData, projData, issuesData, sprintsData, epicsData, actData, notifData, spacesData, docsData, permsData] = await Promise.all([
         authRes.json(),
         usersRes.json(),
         projRes.json(),
@@ -172,10 +289,12 @@ Ask me anything about:
         notifRes.json(),
         spacesRes.json(),
         docsRes.json(),
+        permsRes.json(),
       ]);
 
       if (authData.user) setCurrentUser(authData.user);
       if (usersData.users) setUsers(usersData.users);
+      if (permsData.permissions) setRolePermissions(permsData.permissions);
       if (projData.projects) {
         setProjects(projData.projects);
         if (!currentProject.id && projData.projects.length > 0) {
@@ -600,8 +719,19 @@ Ask me anything about:
         markNotificationRead,
         markAllNotificationsRead,
         permissions,
+        rolePermissions,
+        updateRolePermission,
+        saveAllRolePermissions,
+        resetRolePermissions,
         toast,
         showToast,
+
+        // Profile & Personas
+        isProfileModalOpen,
+        setIsProfileModalOpen,
+        isPersonasModalOpen,
+        setIsPersonasModalOpen,
+        updateCurrentUserProfile,
 
         // Authentication
         isAuthenticated,

@@ -2,6 +2,9 @@ export type Role =
   | "ADMIN"
   | "PROJECT_MANAGER"
   | "PRODUCT_OWNER"
+  | "ARCHITECT"
+  | "SCRUM_MASTER"
+  | "UI_UX_DESIGNER"
   | "DEVELOPER"
   | "QA_ENGINEER"
   | "VIEWER";
@@ -261,6 +264,48 @@ export const ROLE_PERMISSIONS: Record<Role, RolePermissions> = {
     canAddComment: true,
     canManageUsers: false,
   },
+  ARCHITECT: {
+    canCreateProject: true,
+    canManageProjectSettings: true,
+    canManageMembers: true,
+    canCreateSprint: true,
+    canStartCompleteSprint: true,
+    canCreateIssue: true,
+    canEditIssue: true,
+    canDeleteIssue: true,
+    canTransitionIssueStatus: true,
+    canAssignIssue: true,
+    canAddComment: true,
+    canManageUsers: false,
+  },
+  SCRUM_MASTER: {
+    canCreateProject: false,
+    canManageProjectSettings: false,
+    canManageMembers: true,
+    canCreateSprint: true,
+    canStartCompleteSprint: true,
+    canCreateIssue: true,
+    canEditIssue: true,
+    canDeleteIssue: true,
+    canTransitionIssueStatus: true,
+    canAssignIssue: true,
+    canAddComment: true,
+    canManageUsers: false,
+  },
+  UI_UX_DESIGNER: {
+    canCreateProject: false,
+    canManageProjectSettings: false,
+    canManageMembers: false,
+    canCreateSprint: false,
+    canStartCompleteSprint: false,
+    canCreateIssue: true,
+    canEditIssue: true,
+    canDeleteIssue: false,
+    canTransitionIssueStatus: true,
+    canAssignIssue: true,
+    canAddComment: true,
+    canManageUsers: false,
+  },
   DEVELOPER: {
     canCreateProject: false,
     canManageProjectSettings: false,
@@ -303,6 +348,30 @@ export const ROLE_PERMISSIONS: Record<Role, RolePermissions> = {
     canAddComment: false,
     canManageUsers: false,
   },
+};
+
+export const ROLE_COLORS: Record<Role, string> = {
+  ADMIN: 'bg-red-100 text-red-800 border-red-200',
+  PROJECT_MANAGER: 'bg-purple-100 text-purple-800 border-purple-200',
+  PRODUCT_OWNER: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+  ARCHITECT: 'bg-amber-100 text-amber-800 border-amber-200',
+  SCRUM_MASTER: 'bg-teal-100 text-teal-800 border-teal-200',
+  UI_UX_DESIGNER: 'bg-pink-100 text-pink-800 border-pink-200',
+  DEVELOPER: 'bg-blue-100 text-blue-800 border-blue-200',
+  QA_ENGINEER: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  VIEWER: 'bg-slate-100 text-slate-800 border-slate-200',
+};
+
+export const ROLE_LABELS: Record<Role, string> = {
+  ADMIN: 'Admin (Tool Owner)',
+  PROJECT_MANAGER: 'Project Manager',
+  PRODUCT_OWNER: 'Product Owner',
+  ARCHITECT: 'Architect',
+  SCRUM_MASTER: 'Scrum Master',
+  UI_UX_DESIGNER: 'UI/UX Designer',
+  DEVELOPER: 'Developer',
+  QA_ENGINEER: 'QA Engineer',
+  VIEWER: 'Viewer',
 };
 
 // ================= Confluence & ROVO Knowledge Types =================

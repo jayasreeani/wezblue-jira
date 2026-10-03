@@ -18,10 +18,28 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const { userId, role } = await req.json();
-    const updated = db.updateUserRole(userId, role);
-    return NextResponse.json({ user: updated, message: 'Role updated successfully' });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to update role' }, { status: 400 });
+    const body = await req.json();
+    const { userId, role, jobTitle, avatar, department, name, password } = body;
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    const updated = db.updateUserProfile(userId, {
+      role,
+      jobTitle,
+      avatar,
+      department,
+      name,
+      password,
+    });
+
+    if (!updated) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ user: updated, message: 'User updated successfully' });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Failed to update user' }, { status: 400 });
   }
 }

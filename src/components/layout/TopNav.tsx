@@ -4,15 +4,20 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { 
   Search, Plus, Bell, CheckCircle, Shield, 
-  ChevronDown, Layers, Sparkles, Check, ExternalLink, FileSpreadsheet, BookOpen, LogOut 
+  ChevronDown, Layers, Sparkles, Check, ExternalLink, FileSpreadsheet, BookOpen, LogOut,
+  Users, UserCog, Lock
 } from 'lucide-react';
+import { ROLE_COLORS, ROLE_LABELS, Role } from '@/lib/types';
+import ProfileSettingsModal from '@/components/users/ProfileSettingsModal';
+import TeamPersonasModal from '@/components/users/TeamPersonasModal';
 
 export default function TopNav() {
   const { 
     currentUser, switchUser, users, projects, currentProject, 
     setCurrentProject, setIsCreateModalOpen, setIsSearchOpen, 
     setIsBulkUploadOpen, notifications, markNotificationRead, markAllNotificationsRead,
-    setSelectedIssue, issues, permissions, activeView, setActiveView, setIsRovoOpen, logout 
+    setSelectedIssue, issues, permissions, activeView, setActiveView, setIsRovoOpen, logout,
+    isProfileModalOpen, setIsProfileModalOpen, isPersonasModalOpen, setIsPersonasModalOpen
   } = useApp();
 
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -20,15 +25,6 @@ export default function TopNav() {
   const [showNotifs, setShowNotifs] = useState(false);
 
   const unreadNotifs = notifications.filter(n => !n.read);
-
-  const roleColors: Record<string, string> = {
-    ADMIN: 'bg-red-100 text-red-700 border-red-200',
-    PROJECT_MANAGER: 'bg-purple-100 text-purple-700 border-purple-200',
-    PRODUCT_OWNER: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-    DEVELOPER: 'bg-blue-100 text-blue-700 border-blue-200',
-    QA_ENGINEER: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-    VIEWER: 'bg-slate-100 text-slate-700 border-slate-200',
-  };
 
   return (
     <header className="h-14 bg-white border-b border-jira-border px-4 flex items-center justify-between sticky top-0 z-30 select-none shadow-sm">
@@ -154,6 +150,20 @@ export default function TopNav() {
             AI
           </span>
         </button>
+
+        {/* Team Personas Directory Launcher */}
+        <button
+          onClick={() => setIsPersonasModalOpen(true)}
+          className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition shadow-2xs ${
+            isPersonasModalOpen
+              ? 'bg-indigo-50 text-indigo-700 border-indigo-300'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border-jira-border'
+          }`}
+          title="View all 6 Wezblue team personas & switch roles"
+        >
+          <Users className="w-3.5 h-3.5 text-indigo-600" />
+          <span className="hidden md:inline">Team Personas</span>
+        </button>
       </div>
 
       {/* Right: Notifications & Persona Switcher */}
@@ -231,8 +241,8 @@ export default function TopNav() {
             />
             <div className="text-left hidden md:block">
               <div className="text-xs font-bold text-jira-text leading-tight">{currentUser.name}</div>
-              <span className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded border ${roleColors[currentUser.role] || 'bg-slate-100'}`}>
-                {currentUser.role}
+              <span className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded border ${ROLE_COLORS[currentUser.role] || 'bg-slate-100 text-slate-800'}`}>
+                {currentUser.jobTitle || ROLE_LABELS[currentUser.role] || currentUser.role}
               </span>
             </div>
             <ChevronDown className="w-4 h-4 text-jira-subtle" />
@@ -240,15 +250,50 @@ export default function TopNav() {
 
           {showUserMenu && (
             <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-2xl border border-jira-border py-1.5 z-50">
-              <div className="px-3.5 py-2 border-b border-jira-border">
-                <div className="text-[11px] font-bold text-jira-subtle uppercase tracking-wider">
-                  Switch Active Persona (RBAC Tester)
+              <div className="px-3.5 py-2 border-b border-jira-border flex items-center justify-between">
+                <div>
+                  <div className="text-[11px] font-bold text-jira-subtle uppercase tracking-wider">
+                    My Account
+                  </div>
+                  <div className="text-xs font-bold text-jira-text">{currentUser.name}</div>
                 </div>
-                <div className="text-[11px] text-slate-500 mt-0.5">
-                  Test platform live under different security permissions:
-                </div>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${ROLE_COLORS[currentUser.role]}`}>
+                  {currentUser.role}
+                </span>
               </div>
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-50 py-1">
+
+              {/* Profile & Password Action */}
+              <div className="p-2 border-b border-jira-border bg-slate-50/70">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    setIsProfileModalOpen(true);
+                  }}
+                  className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg bg-white hover:bg-blue-50 text-jira-text hover:text-jira-brand border border-slate-200 hover:border-blue-200 text-xs font-bold transition shadow-2xs"
+                >
+                  <UserCog className="w-4 h-4 text-jira-brand" />
+                  <span>Profile & Security Settings</span>
+                </button>
+              </div>
+
+              <div className="px-3.5 py-1.5 bg-slate-50/30 border-b border-jira-border flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">
+                  Switch Persona (RBAC Tester):
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    setIsPersonasModalOpen(true);
+                  }}
+                  className="text-[10px] text-jira-brand hover:underline font-bold"
+                >
+                  View All
+                </button>
+              </div>
+
+              <div className="max-h-64 overflow-y-auto divide-y divide-slate-50 py-1">
                 {users.map(u => (
                   <button
                     key={u.id}
@@ -263,10 +308,10 @@ export default function TopNav() {
                       <div>
                         <div className="text-xs text-jira-text font-medium leading-none">{u.name}</div>
                         <div className="flex items-center space-x-1.5 mt-1">
-                          <span className={`text-[9px] px-1 py-0.2 rounded font-bold border ${roleColors[u.role]}`}>
-                            {u.role}
+                          <span className={`text-[9px] px-1 py-0.2 rounded font-bold border ${ROLE_COLORS[u.role] || 'bg-slate-100'}`}>
+                            {u.jobTitle || ROLE_LABELS[u.role] || u.role}
                           </span>
-                          <span className="text-[10px] text-slate-400 truncate max-w-[110px]">{u.department}</span>
+                          <span className="text-[10px] text-slate-400 truncate max-w-[100px]">{u.department}</span>
                         </div>
                       </div>
                     </div>
@@ -274,6 +319,7 @@ export default function TopNav() {
                   </button>
                 ))}
               </div>
+
               <div className="p-2 border-t border-jira-border bg-slate-50">
                 <button
                   type="button"
@@ -291,6 +337,17 @@ export default function TopNav() {
           )}
         </div>
       </div>
+
+      {/* Global Modals */}
+      <ProfileSettingsModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+      <TeamPersonasModal
+        isOpen={isPersonasModalOpen}
+        onClose={() => setIsPersonasModalOpen(false)}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
+      />
     </header>
   );
 }

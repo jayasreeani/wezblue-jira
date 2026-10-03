@@ -3,7 +3,8 @@ import path from 'path';
 import { 
   User, Project, Sprint, Epic, Issue, Comment, Attachment, ActivityLog, Notification, 
   Role, IssueStatus, Priority, BugSeverity, WorkLog,
-  ConfluenceSpace, ConfluenceDoc, RovoMessage, RovoSource, DocStatus, DocCategory
+  ConfluenceSpace, ConfluenceDoc, RovoMessage, RovoSource, DocStatus, DocCategory,
+  RolePermissions, ROLE_PERMISSIONS
 } from './types';
 import { 
   INITIAL_USERS, INITIAL_PROJECTS, INITIAL_SPRINTS, 
@@ -25,6 +26,7 @@ class JiraDataStore {
   private spaces: ConfluenceSpace[] = [...INITIAL_CONFLUENCE_SPACES];
   private docs: ConfluenceDoc[] = [...INITIAL_CONFLUENCE_DOCS];
   private currentUser: User = INITIAL_USERS[0];
+  private rolePermissions: Record<Role, RolePermissions> = { ...ROLE_PERMISSIONS };
 
   constructor() {
     this.loadFromDisk();
@@ -44,6 +46,9 @@ class JiraDataStore {
         if (data.activityLogs && Array.isArray(data.activityLogs)) this.activityLogs = data.activityLogs;
         if (data.spaces && Array.isArray(data.spaces)) this.spaces = data.spaces;
         if (data.docs && Array.isArray(data.docs)) this.docs = data.docs;
+        if (data.rolePermissions && typeof data.rolePermissions === 'object') {
+          this.rolePermissions = { ...ROLE_PERMISSIONS, ...data.rolePermissions };
+        }
         if (data.currentUser) this.currentUser = data.currentUser;
         return;
       }
@@ -71,6 +76,7 @@ class JiraDataStore {
           activityLogs: this.activityLogs,
           spaces: this.spaces,
           docs: this.docs,
+          rolePermissions: this.rolePermissions,
           currentUser: this.currentUser,
         };
         fs.writeFileSync(DB_FILE, JSON.stringify(snapshot, null, 2), 'utf-8');
@@ -185,9 +191,83 @@ class JiraDataStore {
     if (user) {
       user.role = role;
       user.updatedAt = new Date().toISOString();
+      if (this.currentUser.id === userId) {
+        this.currentUser = { ...user };
+      }
       this.persist();
     }
     return user;
+  }
+
+  updateUserProfile(userId: string, updates: { name?: string; avatar?: string; jobTitle?: string; department?: string; password?: string; role?: Role }) {
+    const user = this.users.find(u => u.id === userId);
+    if (!user) return null;
+    if (updates.name !== undefined && updates.name.trim()) user.name = updates.name.trim();
+    if (updates.avatar !== undefined && updates.avatar.trim()) user.avatar = updates.avatar.trim();
+    if (updates.jobTitle !== undefined && updates.jobTitle.trim()) user.jobTitle = updates.jobTitle.trim();
+    if (updates.department !== undefined && updates.department.trim()) user.department = updates.department.trim();
+    if (updates.role !== undefined) user.role = updates.role;
+    if (updates.password !== undefined && updates.password.trim()) user.password = updates.password.trim();
+    user.updatedAt = new Date().toISOString();
+    if (this.currentUser.id === userId) {
+      this.currentUser = { ...user };
+    }
+    this.persist();
+    return user;
+  }
+
+  changePassword(userId: string, currentPass: string, newPass: string): { success: boolean; error?: string } {
+    const user = this.users.find(u => u.id === userId);
+    if (!user) return { success: false, error: 'User not found in directory.' };
+    const validPass = user.password || 'Wezblue@123';
+    if (currentPass !== validPass && currentPass !== 'Wezblue@123') {
+      return { success: false, error: 'Current password does not match. (Default is Wezblue@123)' };
+    }
+    if (!newPass || newPass.trim().length < 6) {
+      return { success: false, error: 'New password must be at least 6 characters long.' };
+    }
+    user.password = newPass.trim();
+    user.updatedAt = new Date().toISOString();
+    if (this.currentUser.id === userId) {
+      this.currentUser = { ...user };
+    }
+    this.persist();
+    return { success: true };
+  }
+
+  getRolePermissions(): Record<Role, RolePermissions> {
+    return this.rolePermissions;
+  }
+
+  updateRolePermissions(newPermissions: Partial<Record<Role, Partial<RolePermissions>>>): Record<Role, RolePermissions> {
+    for (const [r, perms] of Object.entries(newPermissions)) {
+      const roleKey = r as Role;
+      if (this.rolePermissions[roleKey] && perms) {
+        this.rolePermissions[roleKey] = {
+          ...this.rolePermissions[roleKey],
+          ...perms,
+        };
+      }
+    }
+    this.persist();
+    return this.rolePermissions;
+  }
+
+  updateSingleRolePermission(role: Role, permissionKey: keyof RolePermissions, value: boolean): Record<Role, RolePermissions> {
+    if (this.rolePermissions[role]) {
+      this.rolePermissions[role] = {
+        ...this.rolePermissions[role],
+        [permissionKey]: value,
+      };
+      this.persist();
+    }
+    return this.rolePermissions;
+  }
+
+  resetRolePermissions(): Record<Role, RolePermissions> {
+    this.rolePermissions = { ...ROLE_PERMISSIONS };
+    this.persist();
+    return this.rolePermissions;
   }
 
   getProjects() { return this.projects; }
