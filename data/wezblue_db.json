@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "savedAt": "2026-10-02T18:00:00.000Z",
+  "savedAt": "2026-10-03T08:22:24.043Z",
   "users": [
     {
       "id": "user-jayasree",
@@ -12,7 +12,7 @@
       "department": "Project Management",
       "password": "Wezblue@123",
       "createdAt": "2026-01-01T08:00:00.000Z",
-      "updatedAt": "2026-10-01T08:00:00.000Z"
+      "updatedAt": "2026-10-03T08:22:24.008Z"
     },
     {
       "id": "user-althaf",
@@ -125,6 +125,134 @@
     }
   ],
   "docs": [],
+  "rolePermissions": {
+    "ADMIN": {
+      "canCreateProject": true,
+      "canManageProjectSettings": true,
+      "canManageMembers": true,
+      "canCreateSprint": true,
+      "canStartCompleteSprint": true,
+      "canCreateIssue": true,
+      "canEditIssue": true,
+      "canDeleteIssue": true,
+      "canTransitionIssueStatus": true,
+      "canAssignIssue": true,
+      "canAddComment": true,
+      "canManageUsers": true
+    },
+    "PROJECT_MANAGER": {
+      "canCreateProject": true,
+      "canManageProjectSettings": true,
+      "canManageMembers": true,
+      "canCreateSprint": true,
+      "canStartCompleteSprint": true,
+      "canCreateIssue": true,
+      "canEditIssue": true,
+      "canDeleteIssue": true,
+      "canTransitionIssueStatus": true,
+      "canAssignIssue": true,
+      "canAddComment": true,
+      "canManageUsers": false
+    },
+    "PRODUCT_OWNER": {
+      "canCreateProject": false,
+      "canManageProjectSettings": false,
+      "canManageMembers": false,
+      "canCreateSprint": true,
+      "canStartCompleteSprint": true,
+      "canCreateIssue": true,
+      "canEditIssue": true,
+      "canDeleteIssue": false,
+      "canTransitionIssueStatus": true,
+      "canAssignIssue": true,
+      "canAddComment": true,
+      "canManageUsers": false
+    },
+    "ARCHITECT": {
+      "canCreateProject": true,
+      "canManageProjectSettings": true,
+      "canManageMembers": true,
+      "canCreateSprint": true,
+      "canStartCompleteSprint": true,
+      "canCreateIssue": true,
+      "canEditIssue": true,
+      "canDeleteIssue": true,
+      "canTransitionIssueStatus": true,
+      "canAssignIssue": true,
+      "canAddComment": true,
+      "canManageUsers": false
+    },
+    "SCRUM_MASTER": {
+      "canCreateProject": false,
+      "canManageProjectSettings": false,
+      "canManageMembers": true,
+      "canCreateSprint": true,
+      "canStartCompleteSprint": true,
+      "canCreateIssue": true,
+      "canEditIssue": true,
+      "canDeleteIssue": true,
+      "canTransitionIssueStatus": true,
+      "canAssignIssue": true,
+      "canAddComment": true,
+      "canManageUsers": false
+    },
+    "UI_UX_DESIGNER": {
+      "canCreateProject": false,
+      "canManageProjectSettings": false,
+      "canManageMembers": false,
+      "canCreateSprint": false,
+      "canStartCompleteSprint": false,
+      "canCreateIssue": true,
+      "canEditIssue": true,
+      "canDeleteIssue": false,
+      "canTransitionIssueStatus": true,
+      "canAssignIssue": true,
+      "canAddComment": true,
+      "canManageUsers": false
+    },
+    "DEVELOPER": {
+      "canCreateProject": false,
+      "canManageProjectSettings": false,
+      "canManageMembers": false,
+      "canCreateSprint": false,
+      "canStartCompleteSprint": false,
+      "canCreateIssue": true,
+      "canEditIssue": true,
+      "canDeleteIssue": false,
+      "canTransitionIssueStatus": true,
+      "canAssignIssue": true,
+      "canAddComment": true,
+      "canManageUsers": false
+    },
+    "QA_ENGINEER": {
+      "canCreateProject": false,
+      "canManageProjectSettings": false,
+      "canManageMembers": false,
+      "canCreateSprint": false,
+      "canStartCompleteSprint": false,
+      "canCreateIssue": true,
+      "canEditIssue": true,
+      "canDeleteIssue": false,
+      "canTransitionIssueStatus": true,
+      "canAssignIssue": true,
+      "canAddComment": true,
+      "canManageUsers": false
+    },
+    "VIEWER": {
+      "canCreateProject": false,
+      "canManageProjectSettings": false,
+      "canManageMembers": false,
+      "canCreateSprint": false,
+      "canStartCompleteSprint": false,
+      "canCreateIssue": false,
+      "canEditIssue": false,
+      "canDeleteIssue": false,
+      "canTransitionIssueStatus": false,
+      "canAssignIssue": false,
+      "canAddComment": false,
+      "canManageUsers": false
+    }
+  },
   "currentUser": {
     "id": "user-jayasree",
     "email": "jayasree.kuniyil@wezblue.com",
@@ -135,6 +263,6 @@
     "department": "Project Management",
     "password": "Wezblue@123",
     "createdAt": "2026-01-01T08:00:00.000Z",
-    "updatedAt": "2026-10-01T08:00:00.000Z"
+    "updatedAt": "2026-10-03T08:22:24.008Z"
   }
 }

@@ -12,7 +12,9 @@ import {
   INITIAL_CONFLUENCE_SPACES, INITIAL_CONFLUENCE_DOCS
 } from './seed-data';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+const LOCAL_DATA_DIR = path.join(process.cwd(), 'data');
+const BASE_DB_FILE = path.join(LOCAL_DATA_DIR, 'wezblue_db.json');
+const DATA_DIR = process.env.VERCEL ? '/tmp/wezblue_data' : LOCAL_DATA_DIR;
 const DB_FILE = path.join(DATA_DIR, 'wezblue_db.json');
 
 class JiraDataStore {
@@ -34,23 +36,31 @@ class JiraDataStore {
 
   private loadFromDisk() {
     try {
-      if (typeof window === 'undefined' && fs.existsSync(DB_FILE)) {
-        const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        const data = JSON.parse(raw);
-        if (data.users && Array.isArray(data.users) && data.users.length) this.users = data.users;
-        if (data.projects && Array.isArray(data.projects) && data.projects.length) this.projects = data.projects;
-        if (data.sprints && Array.isArray(data.sprints)) this.sprints = data.sprints;
-        if (data.epics && Array.isArray(data.epics)) this.epics = data.epics;
-        if (data.issues && Array.isArray(data.issues)) this.issues = data.issues;
-        if (data.notifications && Array.isArray(data.notifications)) this.notifications = data.notifications;
-        if (data.activityLogs && Array.isArray(data.activityLogs)) this.activityLogs = data.activityLogs;
-        if (data.spaces && Array.isArray(data.spaces)) this.spaces = data.spaces;
-        if (data.docs && Array.isArray(data.docs)) this.docs = data.docs;
-        if (data.rolePermissions && typeof data.rolePermissions === 'object') {
-          this.rolePermissions = { ...ROLE_PERMISSIONS, ...data.rolePermissions };
+      if (typeof window === 'undefined') {
+        let raw: string | null = null;
+        if (fs.existsSync(DB_FILE)) {
+          raw = fs.readFileSync(DB_FILE, 'utf-8');
+        } else if (fs.existsSync(BASE_DB_FILE)) {
+          raw = fs.readFileSync(BASE_DB_FILE, 'utf-8');
         }
-        if (data.currentUser) this.currentUser = data.currentUser;
-        return;
+
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (data.users && Array.isArray(data.users) && data.users.length) this.users = data.users;
+          if (data.projects && Array.isArray(data.projects) && data.projects.length) this.projects = data.projects;
+          if (data.sprints && Array.isArray(data.sprints)) this.sprints = data.sprints;
+          if (data.epics && Array.isArray(data.epics)) this.epics = data.epics;
+          if (data.issues && Array.isArray(data.issues)) this.issues = data.issues;
+          if (data.notifications && Array.isArray(data.notifications)) this.notifications = data.notifications;
+          if (data.activityLogs && Array.isArray(data.activityLogs)) this.activityLogs = data.activityLogs;
+          if (data.spaces && Array.isArray(data.spaces)) this.spaces = data.spaces;
+          if (data.docs && Array.isArray(data.docs)) this.docs = data.docs;
+          if (data.rolePermissions && typeof data.rolePermissions === 'object') {
+            this.rolePermissions = { ...ROLE_PERMISSIONS, ...data.rolePermissions };
+          }
+          if (data.currentUser) this.currentUser = data.currentUser;
+          return;
+        }
       }
     } catch (e) {
       console.error('Failed to load local DB snapshot:', e);
@@ -80,6 +90,13 @@ class JiraDataStore {
           currentUser: this.currentUser,
         };
         fs.writeFileSync(DB_FILE, JSON.stringify(snapshot, null, 2), 'utf-8');
+
+        // If local file is writable and not in Vercel, also sync to BASE_DB_FILE
+        if (!process.env.VERCEL && DATA_DIR !== LOCAL_DATA_DIR && fs.existsSync(LOCAL_DATA_DIR)) {
+          try {
+            fs.writeFileSync(BASE_DB_FILE, JSON.stringify(snapshot, null, 2), 'utf-8');
+          } catch {}
+        }
       }
     } catch (e) {
       // Ignore write errors in read-only environments
@@ -127,7 +144,35 @@ class JiraDataStore {
     return this.currentUser;
   }
 
-  authenticate(email: string, password?: string): { success: boolean; user?: User; error?: string } {
+  public syncCustomPasswords(customPasswords: Record<string, string>) {
+    if (!customPasswords || typeof customPasswords !== 'object') return;
+    let modified = false;
+    for (const [key, pass] of Object.entries(customPasswords)) {
+      if (!pass || typeof pass !== 'string') continue;
+      const cleanKey = key.trim().toLowerCase();
+      const user = this.users.find(u => 
+        u.id === key || 
+        u.email.toLowerCase() === cleanKey
+      );
+      if (user && user.password !== pass.trim()) {
+        user.password = pass.trim();
+        user.updatedAt = new Date().toISOString();
+        if (this.currentUser.id === user.id) {
+          this.currentUser = { ...user };
+        }
+        modified = true;
+      }
+    }
+    if (modified) {
+      this.persist();
+    }
+  }
+
+  authenticate(email: string, password?: string, customPasswords?: Record<string, string>): { success: boolean; user?: User; error?: string } {
+    if (customPasswords && typeof customPasswords === 'object') {
+      this.syncCustomPasswords(customPasswords);
+    }
+
     const cleanEmail = email.trim().toLowerCase();
     const normalizedEmail = cleanEmail.replace('@wezzblue.', '@wezblue.');
 
@@ -163,9 +208,34 @@ class JiraDataStore {
       }
     }
 
+    // Has user set a custom password?
+    const isCustomPasswordSet = !!(user.password && user.password !== 'Wezblue@123');
     const validPassword = user.password || 'Wezblue@123';
-    if (password && password !== validPassword && password !== 'Wezblue@123' && password !== 'admin123') {
-      return { success: false, error: 'Invalid password. (Default corporate password is Wezblue@123)' };
+
+    if (password) {
+      if (isCustomPasswordSet) {
+        // If a new password has been set, the old default password MUST BE REJECTED
+        if (password !== validPassword) {
+          if (password === 'Wezblue@123') {
+            return { 
+              success: false, 
+              error: 'Default password is no longer valid. Please sign in with your updated new password.' 
+            };
+          }
+          return { 
+            success: false, 
+            error: 'Invalid password. Please check your credentials and try again.' 
+          };
+        }
+      } else {
+        // Default corporate password check
+        if (password !== validPassword && password !== 'Wezblue@123' && password !== 'admin123') {
+          return { 
+            success: false, 
+            error: 'Invalid password. (Default corporate password is Wezblue@123)' 
+          };
+        }
+      }
     }
 
     this.currentUser = user;

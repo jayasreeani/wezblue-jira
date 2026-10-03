@@ -263,6 +263,16 @@ Ask me anything about:
       if (resData.user) {
         setCurrentUser(resData.user);
         setUsers(prev => prev.map(u => u.id === resData.user.id ? resData.user : u));
+
+        // Save new password to localStorage so it persists across serverless instances
+        if (data.newPassword && typeof window !== 'undefined') {
+          try {
+            const stored = JSON.parse(localStorage.getItem('wezblue_custom_passwords') || '{}');
+            stored[currentUser.id] = data.newPassword.trim();
+            stored[currentUser.email.toLowerCase()] = data.newPassword.trim();
+            localStorage.setItem('wezblue_custom_passwords', JSON.stringify(stored));
+          } catch (e) {}
+        }
       }
       return { success: true };
     } catch (e: any) {
@@ -676,10 +686,17 @@ Ask me anything about:
     userId?: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
+      let customPasswords: Record<string, string> | undefined = undefined;
+      if (typeof window !== 'undefined') {
+        try {
+          customPasswords = JSON.parse(localStorage.getItem('wezblue_custom_passwords') || '{}');
+        } catch (e) {}
+      }
+
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, quickLogin, userId }),
+        body: JSON.stringify({ email, password, quickLogin, userId, customPasswords }),
       });
       const data = await res.json();
       if (res.ok && data.user) {

@@ -53,7 +53,7 @@ export default function UserManagementView() {
   const [role, setRole] = useState<Role>('DEVELOPER');
 
   // Admin Reset User Password Modal
-  const [passwordModalUser, setPasswordModalUser] = useState<{ id: string; name: string } | null>(null);
+  const [passwordModalUser, setPasswordModalUser] = useState<{ id: string; name: string; email?: string } | null>(null);
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -133,6 +133,18 @@ export default function UserManagementView() {
         }),
       });
       if (res.ok) {
+        if (typeof window !== 'undefined') {
+          try {
+            const targetUser = users.find(u => u.id === passwordModalUser.id);
+            const targetEmail = passwordModalUser.email || targetUser?.email;
+            const stored = JSON.parse(localStorage.getItem('wezblue_custom_passwords') || '{}');
+            stored[passwordModalUser.id] = newAdminPassword.trim();
+            if (targetEmail) {
+              stored[targetEmail.toLowerCase()] = newAdminPassword.trim();
+            }
+            localStorage.setItem('wezblue_custom_passwords', JSON.stringify(stored));
+          } catch (e) {}
+        }
         showToast(`Password for ${passwordModalUser.name} reset successfully!`, 'success');
         setPasswordModalUser(null);
         setNewAdminPassword('');

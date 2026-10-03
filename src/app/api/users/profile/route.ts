@@ -27,6 +27,7 @@ export async function PATCH(req: Request) {
       avatar,
       jobTitle,
       department,
+      password: newPassword ? newPassword.trim() : undefined,
     });
 
     if (!updatedUser) {

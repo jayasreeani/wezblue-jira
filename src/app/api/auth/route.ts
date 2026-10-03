@@ -24,6 +24,11 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    // Sync any custom passwords from client
+    if (body.customPasswords && typeof body.customPasswords === 'object') {
+      db.syncCustomPasswords(body.customPasswords);
+    }
+
     // 1. Quick Persona Login / RBAC Persona Sign-In
     if (body.quickLogin || (body.userId && !body.password && !body.email)) {
       let user = null;
@@ -45,7 +50,7 @@ export async function POST(req: Request) {
 
     // 2. Corporate email & password login
     if (body.email) {
-      const result = db.authenticate(body.email, body.password);
+      const result = db.authenticate(body.email, body.password, body.customPasswords);
       if (!result.success) {
         return NextResponse.json({ error: result.error || 'Authentication failed' }, { status: 401 });
       }
