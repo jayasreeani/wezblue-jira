@@ -147,7 +147,11 @@ export default function ScrumBoard() {
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-1.5 text-slate-600">
               <Calendar className="w-4 h-4 text-slate-400" />
-              <span>Ends Oct 6, 2026 (4 days left)</span>
+              <span>
+                {activeSprint?.endDate 
+                  ? `Ends ${new Date(activeSprint.endDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}`
+                  : activeSprint ? 'Cadence in progress' : 'No active sprint'}
+              </span>
             </div>
 
             <div className="flex items-center space-x-2">

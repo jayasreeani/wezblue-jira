@@ -12,83 +12,8 @@ import {
   INITIAL_CONFLUENCE_SPACES, INITIAL_CONFLUENCE_DOCS
 } from './seed-data';
 
-export const INITIAL_ROADMAP_INITIATIVES: RoadmapInitiative[] = [
-  {
-    id: "init-1",
-    title: "Zero-Trust Enterprise Authentication & SSO",
-    description: "Multi-tenant OAuth2/SAML with biometric mobile MFA and session anomaly detection.",
-    track: "Security & Compliance",
-    targetQuarter: "Q1 2026",
-    startDate: "2026-01-10",
-    endDate: "2026-03-31",
-    status: "IN_PROGRESS",
-    progress: 85,
-    owner: "Althaf Thajudeen",
-    linkedEpicIds: ["epic-1"],
-    createdAt: "2026-01-01T08:00:00.000Z",
-    updatedAt: "2026-10-01T08:00:00.000Z",
-  },
-  {
-    id: "init-2",
-    title: "Event-Driven Microservices Mesh & Kafka Bus",
-    description: "High-throughput asynchronous messaging pipeline for real-time task notifications.",
-    track: "Core Platform & Microservices",
-    targetQuarter: "Q2 2026",
-    startDate: "2026-03-01",
-    endDate: "2026-06-30",
-    status: "IN_PROGRESS",
-    progress: 60,
-    owner: "Abhijith Mohan",
-    linkedEpicIds: ["epic-2"],
-    createdAt: "2026-01-01T08:00:00.000Z",
-    updatedAt: "2026-10-01T08:00:00.000Z",
-  },
-  {
-    id: "init-3",
-    title: "Next-Gen Mobile App 3.0 (iOS & Android)",
-    description: "Complete UI/UX overhaul with offline caching, push alerts, and biometric quick approve.",
-    track: "Enterprise Mobile Apps",
-    targetQuarter: "Q3 2026",
-    startDate: "2026-06-01",
-    endDate: "2026-09-30",
-    status: "PLANNED",
-    progress: 25,
-    owner: "Vineeth M",
-    linkedEpicIds: [],
-    createdAt: "2026-01-01T08:00:00.000Z",
-    updatedAt: "2026-10-01T08:00:00.000Z",
-  },
-  {
-    id: "init-4",
-    title: "Multi-Cloud FinOps & Automated AI Observability",
-    description: "Infrastructure cost optimization, auto-scaling Kubernetes clusters, and AI health probes.",
-    track: "DevOps & Cloud Governance",
-    targetQuarter: "Q4 2026",
-    startDate: "2026-09-01",
-    endDate: "2026-12-31",
-    status: "PLANNED",
-    progress: 10,
-    owner: "Ramees Raja",
-    linkedEpicIds: [],
-    createdAt: "2026-01-01T08:00:00.000Z",
-    updatedAt: "2026-10-01T08:00:00.000Z",
-  },
-  {
-    id: "init-5",
-    title: "Autonomous Agile AI Agent (WezAI 2.0)",
-    description: "Autonomous sprint backlog groomer, velocity forecaster, and automated code review assistant.",
-    track: "Core Platform & Microservices",
-    targetQuarter: "H1 2027",
-    startDate: "2027-01-01",
-    endDate: "2027-06-30",
-    status: "PLANNED",
-    progress: 0,
-    owner: "Jayasree Kuniyil",
-    linkedEpicIds: [],
-    createdAt: "2026-01-01T08:00:00.000Z",
-    updatedAt: "2026-10-01T08:00:00.000Z",
-  }
-];
+export const INITIAL_ROADMAP_INITIATIVES: RoadmapInitiative[] = [];
+
 
 const LOCAL_DATA_DIR = path.join(process.cwd(), 'data');
 const BASE_DB_FILE = path.join(LOCAL_DATA_DIR, 'wezblue_db.json');

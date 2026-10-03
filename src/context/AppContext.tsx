@@ -158,21 +158,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       }
       try {
-        const cachedIssues = JSON.parse(localStorage.getItem('wezblue_issues_cache') || '[]');
-        if (Array.isArray(cachedIssues) && cachedIssues.length > 0) {
-          const sanitized = cachedIssues.map((i: any) => ({
-            ...i,
-            priority: (i?.priority || 'MEDIUM').toUpperCase(),
-          }));
-          setIssues(sanitized);
-        }
-        const cachedEpics = JSON.parse(localStorage.getItem('wezblue_epics_cache') || '[]');
-        if (Array.isArray(cachedEpics) && cachedEpics.length > 0) {
-          setEpics(cachedEpics);
-        }
-        const cachedProjects = JSON.parse(localStorage.getItem('wezblue_projects_cache') || '[]');
-        if (Array.isArray(cachedProjects) && cachedProjects.length > 0) {
-          setProjects(cachedProjects);
+        const CACHE_VERSION_KEY = 'wezblue_cache_version';
+        const CURRENT_VERSION = 'v3_clean_slate';
+        if (localStorage.getItem(CACHE_VERSION_KEY) !== CURRENT_VERSION) {
+          localStorage.removeItem('wezblue_issues_cache');
+          localStorage.removeItem('wezblue_epics_cache');
+          localStorage.removeItem('wezblue_projects_cache');
+          localStorage.setItem(CACHE_VERSION_KEY, CURRENT_VERSION);
+        } else {
+          const cachedIssues = JSON.parse(localStorage.getItem('wezblue_issues_cache') || '[]');
+          if (Array.isArray(cachedIssues) && cachedIssues.length > 0) {
+            const sanitized = cachedIssues.map((i: any) => ({
+              ...i,
+              priority: (i?.priority || 'MEDIUM').toUpperCase(),
+            }));
+            setIssues(sanitized);
+          }
+          const cachedEpics = JSON.parse(localStorage.getItem('wezblue_epics_cache') || '[]');
+          if (Array.isArray(cachedEpics) && cachedEpics.length > 0) {
+            setEpics(cachedEpics);
+          }
+          const cachedProjects = JSON.parse(localStorage.getItem('wezblue_projects_cache') || '[]');
+          if (Array.isArray(cachedProjects) && cachedProjects.length > 0) {
+            setProjects(cachedProjects);
+          }
         }
       } catch (e) {}
     }
