@@ -3,12 +3,15 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { 
-  Role, RolePermissions, ROLE_COLORS, ROLE_LABELS 
+  Role, RolePermissions, ROLE_COLORS, ROLE_LABELS, User 
 } from '@/lib/types';
+
 import { 
   Users, Plus, Shield, Check, X, Mail, Building, Key, 
-  RotateCcw, Save, Sparkles, Camera, Lock, UserCog, Briefcase, Eye, EyeOff 
+  RotateCcw, Save, Sparkles, Camera, Lock, UserCog, Briefcase, Eye, EyeOff,
+  Info, Copy, CheckCircle2 
 } from 'lucide-react';
+
 
 const ALL_ROLES: Role[] = [
   'ADMIN',
@@ -49,8 +52,9 @@ export default function UserManagementView() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [department, setDepartment] = useState('Core Engineering');
-  const [jobTitle, setJobTitle] = useState('Architect');
+  const [jobTitle, setJobTitle] = useState('Frontend Engineer');
   const [role, setRole] = useState<Role>('DEVELOPER');
+  const [invitedSuccessUser, setInvitedSuccessUser] = useState<User | null>(null);
 
   // Admin Reset User Password Modal
   const [passwordModalUser, setPasswordModalUser] = useState<{ id: string; name: string; email?: string } | null>(null);
@@ -84,12 +88,22 @@ export default function UserManagementView() {
           jobTitle 
         }),
       });
-      if (res.ok) {
-        showToast(`User ${name} invited as ${ROLE_LABELS[role]}`, 'success');
+      const data = await res.json();
+      if (res.ok && data.user) {
+        if (typeof window !== 'undefined') {
+          try {
+            const cachedUsers = JSON.parse(localStorage.getItem('wezblue_users_cache') || '[]');
+            const updated = [...cachedUsers.filter((u: any) => u.id !== data.user.id && u.email !== data.user.email), data.user];
+            localStorage.setItem('wezblue_users_cache', JSON.stringify(updated));
+          } catch (e) {}
+        }
+        showToast(`User ${name} invited as ${ROLE_LABELS[role]}! Default password: Wezblue@123`, 'success');
+        setInvitedSuccessUser(data.user);
         setName('');
         setEmail('');
-        setIsInviteModalOpen(false);
         refreshData();
+      } else {
+        showToast(data.error || 'Failed to invite user', 'error');
       }
     } catch (err) {
       showToast('Failed to invite user', 'error');
@@ -516,89 +530,180 @@ export default function UserManagementView() {
 
       {/* Invite Member Modal */}
       {isInviteModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={handleInviteUser} className="w-full max-w-md bg-white rounded-xl shadow-2xl border border-jira-border p-6 space-y-4">
-            <h2 className="text-base font-bold text-jira-text">Invite Team Member</h2>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          {invitedSuccessUser ? (
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-jira-border p-6 space-y-5 animate-in zoom-in-95">
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <h2 className="text-base font-bold text-slate-900">Team Member Invited!</h2>
+                <p className="text-xs text-slate-500">
+                  <b>{invitedSuccessUser.name}</b> has been provisioned as <b>{ROLE_LABELS[invitedSuccessUser.role] || invitedSuccessUser.role}</b>.
+                </p>
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-jira-subtle mb-1">Full Name *</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="e.g. Liam Foster"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
-              />
-            </div>
+              {/* Credentials Box */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5 text-xs">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Login & Authentication Details
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-slate-200/80">
+                  <span className="text-slate-600 font-medium">Email / User ID:</span>
+                  <span className="font-mono font-bold text-slate-900 select-all">{invitedSuccessUser.email}</span>
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-slate-200/80">
+                  <span className="text-slate-600 font-medium">Handle / Shorthand:</span>
+                  <span className="font-mono font-bold text-jira-brand select-all">{invitedSuccessUser.email.split('@')[0]}</span>
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-slate-200/80">
+                  <span className="text-slate-600 font-medium">Temporary Password:</span>
+                  <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 select-all">
+                    Wezblue@123
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-slate-600 font-medium">RBAC Security Role:</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${ROLE_COLORS[invitedSuccessUser.role]}`}>
+                    {ROLE_LABELS[invitedSuccessUser.role] || invitedSuccessUser.role}
+                  </span>
+                </div>
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-jira-subtle mb-1">Corporate Email *</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="e.g. liam.dev@wezblue.com"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
-              />
-            </div>
+              {/* Instructions */}
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-800 space-y-1">
+                <div className="font-bold flex items-center space-x-1.5 text-blue-900">
+                  <Info className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                  <span>How to test member login:</span>
+                </div>
+                <ol className="list-decimal list-inside space-y-1 text-blue-700 pl-1">
+                  <li>Open an <b>Incognito / Private tab</b>.</li>
+                  <li>Go to <span className="font-mono font-bold text-blue-900">https://wezblue-jira.vercel.app/login</span>.</li>
+                  <li>Sign in using the email/handle and password above.</li>
+                </ol>
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-jira-subtle mb-1">Job Title</label>
-              <input
-                type="text"
-                value={jobTitle}
-                onChange={e => setJobTitle(e.target.value)}
-                placeholder="e.g. Senior Software Architect"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
-              />
+              <div className="flex items-center space-x-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = `Wezblue Enterprise Jira Login\nEmail: ${invitedSuccessUser.email}\nUsername: ${invitedSuccessUser.email.split('@')[0]}\nPassword: Wezblue@123\nURL: https://wezblue-jira.vercel.app/login`;
+                    navigator.clipboard.writeText(text);
+                    showToast('Login credentials copied to clipboard!', 'success');
+                  }}
+                  className="flex-1 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-semibold flex items-center justify-center space-x-1.5 transition"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy Credentials</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInvitedSuccessUser(null);
+                    setIsInviteModalOpen(false);
+                  }}
+                  className="flex-1 py-2 px-3 bg-jira-brand hover:bg-jira-brandHover text-white rounded-lg text-xs font-bold transition shadow-xs"
+                >
+                  Done
+                </button>
+              </div>
             </div>
+          ) : (
+            <form onSubmit={handleInviteUser} className="w-full max-w-md bg-white rounded-xl shadow-2xl border border-jira-border p-6 space-y-4">
+              <h2 className="text-base font-bold text-jira-text">Invite Team Member</h2>
 
-            <div>
-              <label className="block text-xs font-bold text-jira-subtle mb-1">Department</label>
-              <input
-                type="text"
-                value={department}
-                onChange={e => setDepartment(e.target.value)}
-                placeholder="e.g. Architecture & Engineering"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
-              />
-            </div>
+              {/* Informative Callout */}
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs space-y-1">
+                <div className="font-bold flex items-center space-x-1.5 text-blue-900">
+                  <Info className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                  <span>Corporate Login Credentials</span>
+                </div>
+                <p className="text-[11px] text-blue-700 leading-relaxed">
+                  Invited members can immediately sign in using their corporate email with the default password <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-900">Wezblue@123</span>.
+                </p>
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-jira-subtle mb-1">Assigned RBAC Security Role</label>
-              <select
-                value={role}
-                onChange={e => setRole(e.target.value as Role)}
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium bg-white"
-              >
-                {ALL_ROLES.map(r => (
-                  <option key={r} value={r}>
-                    {ROLE_LABELS[r]}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <div>
+                <label className="block text-xs font-bold text-jira-subtle mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="e.g. Liam Foster"
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
+                />
+              </div>
 
-            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-200">
-              <button
-                type="button"
-                onClick={() => setIsInviteModalOpen(false)}
-                className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-1.5 bg-jira-brand hover:bg-jira-brandHover text-white text-xs font-bold rounded-lg shadow-xs"
-              >
-                Send Invitation
-              </button>
-            </div>
-          </form>
+              <div>
+                <label className="block text-xs font-bold text-jira-subtle mb-1">Corporate Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="e.g. liam.dev@wezblue.com"
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-jira-subtle mb-1">Job Title</label>
+                <input
+                  type="text"
+                  value={jobTitle}
+                  onChange={e => setJobTitle(e.target.value)}
+                  placeholder="e.g. Frontend Engineer"
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-jira-subtle mb-1">Department</label>
+                <input
+                  type="text"
+                  value={department}
+                  onChange={e => setDepartment(e.target.value)}
+                  placeholder="e.g. Architecture & Engineering"
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-jira-subtle mb-1">Assigned RBAC Security Role</label>
+                <select
+                  value={role}
+                  onChange={e => setRole(e.target.value as Role)}
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium bg-white"
+                >
+                  {ALL_ROLES.map(r => (
+                    <option key={r} value={r}>
+                      {ROLE_LABELS[r]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setIsInviteModalOpen(false)}
+                  className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-jira-brand hover:bg-jira-brandHover text-white text-xs font-bold rounded-lg shadow-xs"
+                >
+                  Send Invitation
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       )}
+
     </div>
   );
 }

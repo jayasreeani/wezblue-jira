@@ -152,7 +152,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setIsAuthenticated(true);
       }
       if (storedUserId) {
-        const found = INITIAL_USERS.find(u => u.id === storedUserId);
+        let allKnown = INITIAL_USERS;
+        try {
+          const cached = JSON.parse(localStorage.getItem('wezblue_users_cache') || '[]');
+          if (Array.isArray(cached) && cached.length > 0) {
+            allKnown = [...allKnown, ...cached];
+          }
+        } catch (e) {}
+        const found = allKnown.find(u => u.id === storedUserId);
         if (found) {
           setCurrentUser(found);
         }
@@ -365,7 +372,20 @@ Ask me anything about:
           setCurrentUser(authData.user);
         }
       }
-      if (usersData.users) setUsers(usersData.users);
+      let finalUsers = usersData.users || [];
+      if (typeof window !== 'undefined') {
+        try {
+          const cachedUsers = JSON.parse(localStorage.getItem('wezblue_users_cache') || '[]');
+          if (Array.isArray(cachedUsers) && cachedUsers.length > 0) {
+            const serverUserIds = new Set(finalUsers.map((u: any) => u.id));
+            const serverEmails = new Set(finalUsers.map((u: any) => (u.email || '').toLowerCase()));
+            const localOnly = cachedUsers.filter((u: any) => !serverUserIds.has(u.id) && !serverEmails.has((u.email || '').toLowerCase()));
+            finalUsers = [...finalUsers, ...localOnly];
+          }
+          localStorage.setItem('wezblue_users_cache', JSON.stringify(finalUsers));
+        } catch (e) {}
+      }
+      setUsers(finalUsers);
       if (permsData.permissions) setRolePermissions(permsData.permissions);
       // Intelligent merge for projects: Server projects + client-cached projects
       let finalProjects = projData.projects || [];
@@ -1248,16 +1268,18 @@ Ask me anything about:
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       let customPasswords: Record<string, string> | undefined = undefined;
+      let cachedUsers: any[] = [];
       if (typeof window !== 'undefined') {
         try {
           customPasswords = JSON.parse(localStorage.getItem('wezblue_custom_passwords') || '{}');
+          cachedUsers = JSON.parse(localStorage.getItem('wezblue_users_cache') || '[]');
         } catch (e) {}
       }
 
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, quickLogin, userId, customPasswords }),
+        body: JSON.stringify({ email, password, quickLogin, userId, customPasswords, cachedUsers }),
       });
       const data = await res.json();
       if (res.ok && data.user) {

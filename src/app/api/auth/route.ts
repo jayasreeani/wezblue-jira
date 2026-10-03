@@ -24,9 +24,12 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // Sync any custom passwords from client
+    // Sync any custom passwords or invited users from client
     if (body.customPasswords && typeof body.customPasswords === 'object') {
       db.syncCustomPasswords(body.customPasswords);
+    }
+    if (body.cachedUsers && Array.isArray(body.cachedUsers)) {
+      db.syncUsers(body.cachedUsers);
     }
 
     // 1. Quick Persona Login / RBAC Persona Sign-In

@@ -286,21 +286,54 @@ class JiraDataStore {
     this.currentUser = user;
     return { success: true, user };
   }
-  addUser(data: { name: string; email: string; role: Role; department?: string }) {
+
+  syncUsers(cachedUsers: User[]) {
+    if (!Array.isArray(cachedUsers)) return;
+    let modified = false;
+    for (const cu of cachedUsers) {
+      if (!cu || !cu.email) continue;
+      const cleanEmail = cu.email.trim().toLowerCase();
+      const existingIdx = this.users.findIndex(u => u.id === cu.id || u.email.toLowerCase() === cleanEmail);
+      if (existingIdx >= 0) {
+        this.users[existingIdx] = { ...this.users[existingIdx], ...cu };
+      } else {
+        this.users.push(cu);
+        modified = true;
+      }
+    }
+    if (modified) {
+      this.persist();
+    }
+  }
+
+  addUser(data: { name: string; email: string; role: Role; department?: string; jobTitle?: string; password?: string; avatar?: string }) {
+    const cleanEmail = (data.email || '').trim().toLowerCase();
+    const handle = cleanEmail.split('@')[0].replace(/[^a-z0-9]/g, '');
     const newUser: User = {
-      id: 'user-' + (this.users.length + 1),
-      name: data.name,
-      email: data.email,
+      id: `user-${handle || Date.now()}`,
+      name: data.name.trim(),
+      email: cleanEmail,
       role: data.role,
-      department: data.department || 'Engineering',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+      jobTitle: data.jobTitle?.trim() || 'Team Member',
+      department: data.department?.trim() || 'Core Engineering',
+      password: data.password || 'Wezblue@123',
+      avatar: data.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    const existingIdx = this.users.findIndex(u => u.email.toLowerCase() === cleanEmail || u.id === newUser.id);
+    if (existingIdx >= 0) {
+      this.users[existingIdx] = { ...this.users[existingIdx], ...newUser, id: this.users[existingIdx].id };
+      this.persist();
+      return this.users[existingIdx];
+    }
+
     this.users.push(newUser);
     this.persist();
     return newUser;
   }
+
   updateUserRole(userId: string, role: Role) {
     const user = this.users.find(u => u.id === userId);
     if (user) {
