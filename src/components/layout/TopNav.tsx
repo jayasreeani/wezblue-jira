@@ -49,9 +49,9 @@ export default function TopNav() {
             className="flex items-center space-x-2 text-sm font-medium text-jira-text hover:bg-jira-bg px-2.5 py-1.5 rounded transition"
           >
             <span className="w-5 h-5 rounded bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
-              {currentProject.key.slice(0, 2)}
+              {(currentProject?.key || 'PR').slice(0, 2)}
             </span>
-            <span className="truncate max-w-[160px] font-semibold">{currentProject.name}</span>
+            <span className="truncate max-w-[160px] font-semibold">{currentProject?.name || 'Enterprise Project'}</span>
             <ChevronDown className="w-4 h-4 text-jira-subtle" />
           </button>
 
@@ -78,7 +78,7 @@ export default function TopNav() {
                       <div className="text-[11px] text-jira-subtle mt-0.5">{p.key} • {p.template}</div>
                     </div>
                   </div>
-                  {currentProject.id === p.id && <Check className="w-4 h-4 text-jira-brand" />}
+                  {currentProject?.id === p.id && <Check className="w-4 h-4 text-jira-brand" />}
                 </button>
               ))}
             </div>
@@ -227,14 +227,14 @@ export default function TopNav() {
             className="flex items-center space-x-2.5 p-1 rounded-lg hover:bg-jira-bg transition"
           >
             <img
-              src={currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
-              alt={currentUser.name}
+              src={currentUser?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
+              alt={currentUser?.name || 'User'}
               className="w-8 h-8 rounded-full object-cover border border-jira-border"
             />
             <div className="text-left hidden md:block">
-              <div className="text-xs font-bold text-jira-text leading-tight">{currentUser.name}</div>
-              <span className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded border ${ROLE_COLORS[currentUser.role] || 'bg-slate-100 text-slate-800'}`}>
-                {currentUser.jobTitle || ROLE_LABELS[currentUser.role] || currentUser.role}
+              <div className="text-xs font-bold text-jira-text leading-tight">{currentUser?.name || 'User'}</div>
+              <span className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded border ${ROLE_COLORS[currentUser?.role || 'ADMIN'] || 'bg-slate-100 text-slate-800'}`}>
+                {currentUser?.jobTitle || ROLE_LABELS[currentUser?.role || 'ADMIN'] || currentUser?.role || 'Admin'}
               </span>
             </div>
             <ChevronDown className="w-4 h-4 text-jira-subtle" />
@@ -247,10 +247,10 @@ export default function TopNav() {
                   <div className="text-[11px] font-bold text-jira-subtle uppercase tracking-wider">
                     My Account
                   </div>
-                  <div className="text-xs font-bold text-jira-text">{currentUser.name}</div>
+                  <div className="text-xs font-bold text-jira-text">{currentUser?.name || 'User'}</div>
                 </div>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${ROLE_COLORS[currentUser.role]}`}>
-                  {currentUser.role}
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${ROLE_COLORS[currentUser?.role || 'ADMIN'] || 'bg-slate-100'}`}>
+                  {currentUser?.role || 'ADMIN'}
                 </span>
               </div>
 
@@ -269,7 +269,7 @@ export default function TopNav() {
                 </button>
               </div>
 
-              {currentUser.role === 'ADMIN' && (
+              {currentUser?.role === 'ADMIN' && (
                 <>
                   <div className="px-3.5 py-1.5 bg-indigo-50/50 border-b border-jira-border flex items-center justify-between">
                     <span className="text-[10px] font-bold text-indigo-900 uppercase">
@@ -295,7 +295,7 @@ export default function TopNav() {
                           switchUser(u.id);
                           setShowUserMenu(false);
                         }}
-                        className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between hover:bg-blue-50 transition ${currentUser.id === u.id ? 'bg-blue-50/70 font-semibold' : ''}`}
+                        className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between hover:bg-blue-50 transition ${currentUser?.id === u.id ? 'bg-blue-50/70 font-semibold' : ''}`}
                       >
                         <div className="flex items-center space-x-2.5">
                           <img src={u.avatar} alt={u.name} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
@@ -309,7 +309,7 @@ export default function TopNav() {
                             </div>
                           </div>
                         </div>
-                        {currentUser.id === u.id && <Check className="w-4 h-4 text-jira-brand" />}
+                        {currentUser?.id === u.id && <Check className="w-4 h-4 text-jira-brand" />}
                       </button>
                     ))}
                   </div>

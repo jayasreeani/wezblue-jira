@@ -184,12 +184,12 @@ export default function ProjectSettingsView() {
         <div className="flex items-center justify-between border-b border-jira-border pb-4">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-xl bg-jira-brand text-white flex items-center justify-center font-black text-lg shadow-sm">
-              {currentProject.key.slice(0, 2)}
+              {(currentProject?.key || 'PR').slice(0, 2)}
             </div>
             <div>
-              <h2 className="text-base font-bold text-jira-text">{currentProject.name}</h2>
+              <h2 className="text-base font-bold text-jira-text">{currentProject?.name || 'Enterprise Project'}</h2>
               <div className="text-xs text-slate-500 font-medium mt-0.5">
-                Key: <b className="text-jira-brand">{currentProject.key}</b> • Methodology: <b>{currentProject.template}</b>
+                Key: <b className="text-jira-brand">{currentProject?.key || 'PR'}</b> • Methodology: <b>{currentProject?.template || 'SCRUM'}</b>
               </div>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function ProjectSettingsView() {
               Project Description
             </label>
             <p className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-slate-700 leading-relaxed font-medium">
-              {currentProject.description || 'Enterprise project repository for distributed application engineering.'}
+              {currentProject?.description || 'Enterprise project repository for distributed application engineering.'}
             </p>
           </div>
 
@@ -236,9 +236,9 @@ export default function ProjectSettingsView() {
               Agile Framework
             </label>
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-slate-700 space-y-1">
-              <div className="font-bold text-slate-900">{currentProject.template} Architecture</div>
+              <div className="font-bold text-slate-900">{currentProject?.template || 'SCRUM'} Architecture</div>
               <div className="text-[11px] text-slate-500 leading-relaxed">
-                {currentProject.template === 'SCRUM'
+                {(currentProject?.template || 'SCRUM') === 'SCRUM'
                   ? 'Iterative timeboxed sprints, estimation in story points, sprint burndown, and velocity forecasting.'
                   : 'Continuous flow delivery, WIP limits per status column, and cycle-time optimization.'}
               </div>

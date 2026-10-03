@@ -159,7 +159,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const cachedIssues = JSON.parse(localStorage.getItem('wezblue_issues_cache') || '[]');
         if (Array.isArray(cachedIssues) && cachedIssues.length > 0) {
-          setIssues(cachedIssues);
+          const sanitized = cachedIssues.map((i: any) => ({
+            ...i,
+            priority: (i?.priority || 'MEDIUM').toUpperCase(),
+          }));
+          setIssues(sanitized);
         }
         const cachedEpics = JSON.parse(localStorage.getItem('wezblue_epics_cache') || '[]');
         if (Array.isArray(cachedEpics) && cachedEpics.length > 0) {
@@ -349,9 +353,10 @@ Ask me anything about:
       }
       if (usersData.users) setUsers(usersData.users);
       if (permsData.permissions) setRolePermissions(permsData.permissions);
-      if (projData.projects) {
+      if (projData.projects && projData.projects.length > 0) {
         setProjects(projData.projects);
-        if (!currentProject.id && projData.projects.length > 0) {
+        const exists = projData.projects.find((p: Project) => p.id === currentProject?.id);
+        if (!exists) {
           setCurrentProject(projData.projects[0]);
         }
       }
@@ -368,6 +373,10 @@ Ask me anything about:
           localStorage.setItem('wezblue_issues_cache', JSON.stringify(finalIssues));
         } catch (e) {}
       }
+      finalIssues = finalIssues.map((i: any) => ({
+        ...i,
+        priority: (i.priority || 'MEDIUM').toUpperCase(),
+      }));
       setIssues(finalIssues);
 
       if (sprintsData.sprints) setSprints(sprintsData.sprints);

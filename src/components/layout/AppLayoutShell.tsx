@@ -11,6 +11,7 @@ import BulkUploadModal from '@/components/issues/BulkUploadModal';
 import IssueDetailDrawer from '@/components/issues/IssueDetailDrawer';
 import ToastNotification from '@/components/common/ToastNotification';
 import LoginPage from '@/components/auth/LoginPage';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 export default function AppLayoutShell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useApp();
@@ -38,7 +39,9 @@ export default function AppLayoutShell({ children }: { children: React.ReactNode
       <div className="flex-1 flex overflow-hidden">
         <Sidebar />
         <main className="flex-1 flex flex-col overflow-hidden relative">
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
       <CommandPalette />

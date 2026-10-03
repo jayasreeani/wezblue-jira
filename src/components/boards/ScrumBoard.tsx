@@ -44,12 +44,21 @@ export default function ScrumBoard() {
   const totalActualHours = activeIssues.reduce((sum, i) => sum + (i.actualHours || 0), 0);
   const totalRemainingHours = activeIssues.reduce((sum, i) => sum + (i.remainingHours ?? i.estimatedHours ?? 0), 0);
 
-  const priorityBadges: Record<Priority, { label: string; color: string }> = {
+  const priorityBadges: Record<string, { label: string; color: string }> = {
+    CRITICAL: { label: 'P0', color: 'text-red-700 bg-red-100' },
+    BLOCKER: { label: 'P0', color: 'text-red-700 bg-red-100' },
     HIGHEST: { label: 'P0', color: 'text-red-700 bg-red-100' },
     HIGH: { label: 'P1', color: 'text-orange-700 bg-orange-100' },
     MEDIUM: { label: 'P2', color: 'text-yellow-700 bg-yellow-100' },
+    NORMAL: { label: 'P2', color: 'text-yellow-700 bg-yellow-100' },
     LOW: { label: 'P3', color: 'text-blue-700 bg-blue-100' },
     LOWEST: { label: 'P4', color: 'text-slate-600 bg-slate-100' },
+  };
+
+  const getPriorityBadge = (priority?: string) => {
+    if (!priority) return { label: 'P2', color: 'text-yellow-700 bg-yellow-100' };
+    const p = String(priority).toUpperCase();
+    return priorityBadges[p] || { label: 'P2', color: 'text-yellow-700 bg-yellow-100' };
   };
 
   const typeIcons: Record<IssueType, React.ReactNode> = {
@@ -231,7 +240,7 @@ export default function ScrumBoard() {
                     {/* Top Row: Type & Key & Phase */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-1.5 min-w-0">
-                        {typeIcons[issue.type]}
+                        {typeIcons[issue.type] || <CheckSquare className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />}
                         <span className="font-extrabold text-[11px] text-blue-600 group-hover:underline truncate">
                           {issue.key}
                         </span>
@@ -241,8 +250,8 @@ export default function ScrumBoard() {
                           </span>
                         )}
                       </div>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${priorityBadges[issue.priority].color}`}>
-                        {priorityBadges[issue.priority].label}
+                      <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${getPriorityBadge(issue.priority).color}`}>
+                        {getPriorityBadge(issue.priority).label}
                       </span>
                     </div>
 
