@@ -48,9 +48,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Corporate email & password login
-    if (body.email) {
-      const result = db.authenticate(body.email, body.password, body.customPasswords);
+    // Corporate email/ID & password login
+    const identifier = body.email || body.userId || body.identifier;
+    if (identifier) {
+      const result = db.authenticate(identifier, body.password, body.customPasswords);
       if (!result.success) {
         return NextResponse.json({ error: result.error || 'Authentication failed' }, { status: 401 });
       }
@@ -58,12 +59,6 @@ export async function POST(req: Request) {
         user: result.user, 
         message: 'Successfully authenticated to Wezblue Enterprise Jira' 
       });
-    }
-
-    // 3. Persona switch by userId
-    if (body.userId) {
-      const user = db.setCurrentUser(body.userId);
-      return NextResponse.json({ user, message: 'Active persona switched' });
     }
 
     return NextResponse.json({ error: 'Email or UserId is required' }, { status: 400 });

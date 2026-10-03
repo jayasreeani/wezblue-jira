@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { 
   Layers, Lock, Mail, Eye, EyeOff, ArrowRight, 
-  ShieldCheck, Sparkles, CheckCircle2, AlertCircle, Info, BookOpen 
+  ShieldCheck, Sparkles, CheckCircle2, AlertCircle, Info, BookOpen, User as UserIcon 
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -27,13 +27,13 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
-      setErrorMsg('Please enter your Wezblue email address.');
+      setErrorMsg('Please enter your corporate email or user ID.');
       return;
     }
     setErrorMsg('');
     setIsLoading(true);
 
-    const res = await login(email.trim(), password);
+    const res = await login(email.trim(), password.trim());
     if (!res.success) {
       setErrorMsg(res.error || 'Failed to sign in. Please verify your credentials.');
       setIsLoading(false);
@@ -71,7 +71,7 @@ export default function LoginPage() {
           <div>
             <h2 className="text-lg font-bold text-slate-900 text-center">Sign in to your workspace</h2>
             <p className="text-xs text-slate-500 text-center mt-0.5">
-              Enter your corporate Wezblue email and password
+              Enter your corporate email or user ID (e.g. <b>jayasree</b>)
             </p>
           </div>
 
@@ -83,20 +83,23 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email Field */}
+            {/* Email or ID Field */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Wezblue Email Address
+                Wezblue Corporate Email or User ID
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
-                  type="email"
+                  type="text"
                   required
-                  placeholder="name@wezblue.com"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  placeholder="e.g. jayasree or jayasree.kuniyil@wezblue.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-jira-brand focus:border-transparent transition"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-jira-brand focus:border-transparent transition font-medium"
                 />
               </div>
             </div>
