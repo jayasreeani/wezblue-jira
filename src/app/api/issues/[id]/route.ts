@@ -10,7 +10,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     const body = await req.json();
-    const updated = db.updateIssue(params.id, body);
+    let updated = db.updateIssue(params.id, body);
+    if (!updated && body.fullIssue) {
+      try {
+        const created = db.createIssue(body.fullIssue);
+        if (created) {
+          updated = db.updateIssue(created.id, body) || created;
+        }
+      } catch (e) {}
+    }
     if (!updated) return NextResponse.json({ error: 'Issue not found' }, { status: 404 });
     return NextResponse.json({ issue: updated, message: 'Issue updated' });
   } catch (error) {

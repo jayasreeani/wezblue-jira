@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { Issue, Sprint, IssueType } from '@/lib/types';
+import { Issue, Sprint, IssueType, IssueStatus } from '@/lib/types';
 import { 
   Bookmark, CheckSquare, Bug, Zap, Plus, 
   Play, CheckCircle2, ChevronDown, ChevronRight, MoreHorizontal, ArrowRight, Clock, Calendar, FileSpreadsheet,
@@ -11,7 +11,7 @@ import {
 
 export default function BacklogView() {
   const { 
-    issues, sprints, currentProject, updateIssue, 
+    issues, sprints, currentProject, updateIssue, moveIssueStatus,
     setSelectedIssue, setIsCreateModalOpen, setIsBulkUploadOpen, permissions, refreshData, showToast 
   } = useApp();
 
@@ -328,9 +328,25 @@ export default function BacklogView() {
                           </span>
                         ) : null}
 
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                          {issue.status.replace('_', ' ')}
-                        </span>
+                        <select
+                          value={issue.status}
+                          onClick={e => e.stopPropagation()}
+                          onChange={async (e) => {
+                            e.stopPropagation();
+                            await moveIssueStatus(issue.id, e.target.value as IssueStatus);
+                          }}
+                          disabled={!permissions.canTransitionIssueStatus}
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 outline-none hover:bg-slate-200 cursor-pointer"
+                          title="Change Issue Status"
+                        >
+                          <option value="BACKLOG">BACKLOG</option>
+                          <option value="TODO">TO DO</option>
+                          <option value="IN_PROGRESS">IN PROGRESS</option>
+                          <option value="UNDER_REVIEW">UNDER REVIEW</option>
+                          <option value="IN_QA">IN QA</option>
+                          <option value="IN_STAKEHOLDER_VALIDATION">STAKEHOLDER</option>
+                          <option value="DONE">DONE</option>
+                        </select>
 
                         {issue.storyPoints !== undefined && (
                           <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-800 text-[10px] font-bold flex items-center justify-center border border-slate-200">
@@ -451,9 +467,25 @@ export default function BacklogView() {
                       </span>
                     ) : null}
 
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                      {issue.status.replace('_', ' ')}
-                    </span>
+                    <select
+                      value={issue.status}
+                      onClick={e => e.stopPropagation()}
+                      onChange={async (e) => {
+                        e.stopPropagation();
+                        await moveIssueStatus(issue.id, e.target.value as IssueStatus);
+                      }}
+                      disabled={!permissions.canTransitionIssueStatus}
+                      className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 outline-none hover:bg-slate-200 cursor-pointer"
+                      title="Change Issue Status"
+                    >
+                      <option value="BACKLOG">BACKLOG</option>
+                      <option value="TODO">TO DO</option>
+                      <option value="IN_PROGRESS">IN PROGRESS</option>
+                      <option value="UNDER_REVIEW">UNDER REVIEW</option>
+                      <option value="IN_QA">IN QA</option>
+                      <option value="IN_STAKEHOLDER_VALIDATION">STAKEHOLDER</option>
+                      <option value="DONE">DONE</option>
+                    </select>
 
                     {/* Move to Active or Upcoming Sprint Selector */}
                     {sprints.length > 0 && (

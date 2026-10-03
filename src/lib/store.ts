@@ -429,6 +429,50 @@ class JiraDataStore {
     return newEpic;
   }
 
+  updateEpic(id: string, updates: Partial<Epic>) {
+    let index = this.epics.findIndex(e => e.id === id);
+    if (index === -1) {
+      if (updates.name && (updates as any).projectId) {
+        const created: Epic = {
+          id,
+          projectId: (updates as any).projectId,
+          name: updates.name,
+          summary: updates.summary || '',
+          color: updates.color || '#8777d9',
+          status: updates.status || 'IN_PROGRESS',
+          createdAt: (updates as any).createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        this.epics.push(created);
+        this.persist();
+        return created;
+      }
+      return null;
+    }
+    this.epics[index] = {
+      ...this.epics[index],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    this.persist();
+    return this.epics[index];
+  }
+
+  deleteEpic(id: string) {
+    const index = this.epics.findIndex(e => e.id === id);
+    if (index === -1) return false;
+    this.epics.splice(index, 1);
+    // Unlink issues attached to this epic
+    this.issues.forEach(i => {
+      if (i.epicId === id) {
+        i.epicId = undefined;
+        i.epic = undefined;
+      }
+    });
+    this.persist();
+    return true;
+  }
+
   getIssues(filter?: { projectId?: string; sprintId?: string; type?: string; status?: string; search?: string }) {
     let result = [...this.issues];
     if (filter?.projectId) result = result.filter(i => i.projectId === filter.projectId);
@@ -568,8 +612,15 @@ class JiraDataStore {
   }
 
   updateIssue(id: string, updates: Partial<Issue>) {
-    const index = this.issues.findIndex(i => i.id === id || i.key === id);
-    if (index === -1) return null;
+    let index = this.issues.findIndex(i => i.id === id || i.key.toUpperCase() === id.toUpperCase());
+    if (index === -1) {
+      if ((updates as any).fullIssue) {
+        this.issues.push((updates as any).fullIssue);
+        index = this.issues.length - 1;
+      } else {
+        return null;
+      }
+    }
 
     const oldIssue = { ...this.issues[index] };
 
@@ -637,7 +688,7 @@ class JiraDataStore {
   }
 
   deleteIssue(id: string) {
-    const index = this.issues.findIndex(i => i.id === id || i.key === id);
+    const index = this.issues.findIndex(i => i.id === id || i.key.toUpperCase() === id.toUpperCase());
     if (index !== -1) {
       const deleted = this.issues.splice(index, 1)[0];
       this.persist();

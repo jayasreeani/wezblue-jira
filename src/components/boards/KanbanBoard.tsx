@@ -11,7 +11,7 @@ import {
 export default function KanbanBoard() {
   const { 
     issues, currentProject, moveIssueStatus, 
-    setSelectedIssue, setIsCreateModalOpen, currentUser, users 
+    setSelectedIssue, setIsCreateModalOpen, currentUser, users, permissions 
   } = useApp();
 
   const [search, setSearch] = useState('');
@@ -340,6 +340,48 @@ export default function KanbanBoard() {
                         <div className="w-5 h-5 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center">
                           <UserIcon className="w-3 h-3" />
                         </div>
+                      )}
+                    </div>
+
+                    {/* Fast Status Transition Stepper on Card */}
+                    <div className="pt-2 flex items-center justify-between border-t border-slate-100" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center space-x-1.5">
+                        <select
+                          value={issue.status}
+                          onChange={async (e) => {
+                            e.stopPropagation();
+                            await moveIssueStatus(issue.id, e.target.value as IssueStatus);
+                          }}
+                          disabled={!permissions.canTransitionIssueStatus}
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200 text-slate-700 outline-none hover:bg-slate-100 cursor-pointer max-w-[130px] truncate"
+                          title="Change Issue Status"
+                        >
+                          <option value="BACKLOG">BACKLOG</option>
+                          <option value="TODO">TO DO</option>
+                          <option value="IN_PROGRESS">IN PROGRESS</option>
+                          <option value="UNDER_REVIEW">UNDER REVIEW</option>
+                          <option value="IN_QA">IN QA</option>
+                          <option value="IN_STAKEHOLDER_VALIDATION">STAKEHOLDER</option>
+                          <option value="DONE">DONE</option>
+                        </select>
+                      </div>
+
+                      {issue.status !== 'DONE' && permissions.canTransitionIssueStatus && (
+                        <button
+                          type="button"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const flow: IssueStatus[] = ['TODO', 'IN_PROGRESS', 'UNDER_REVIEW', 'IN_QA', 'IN_STAKEHOLDER_VALIDATION', 'DONE'];
+                            const curIdx = flow.indexOf(issue.status);
+                            const nextStatus = curIdx >= 0 && curIdx < flow.length - 1 ? flow[curIdx + 1] : 'IN_PROGRESS';
+                            await moveIssueStatus(issue.id, nextStatus);
+                          }}
+                          className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-jira-brand rounded border border-blue-200 transition flex items-center space-x-0.5 shadow-2xs"
+                          title="Advance to next workflow stage"
+                        >
+                          <span>Next</span>
+                          <span>➔</span>
+                        </button>
                       )}
                     </div>
                   </div>

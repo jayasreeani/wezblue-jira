@@ -109,43 +109,35 @@ export default function TopNav() {
         )}
       </div>
 
-      {/* Middle: Global Search, Confluence & ROVO AI Trigger */}
-      <div className="flex-1 max-w-xl mx-6 flex items-center space-x-2.5">
+      {/* Middle: Global Search */}
+      <div className="flex-1 max-w-md mx-3 lg:mx-6 min-w-0">
         <button
           onClick={() => setIsSearchOpen(true)}
-          className="flex-1 flex items-center justify-between px-3 py-1.5 bg-jira-bg hover:bg-slate-200/70 border border-jira-border rounded-md text-sm text-jira-subtle transition"
+          className="w-full flex items-center justify-between px-3 py-1.5 bg-jira-bg hover:bg-slate-200/70 border border-jira-border rounded-md text-sm text-jira-subtle transition min-w-[180px]"
+          title="Search issues, epics, docs (Ctrl+K)"
         >
-          <div className="flex items-center space-x-2">
-            <Search className="w-4 h-4 text-jira-subtle" />
-            <span>Search issues, epics, docs...</span>
+          <div className="flex items-center space-x-2 min-w-0 flex-1">
+            <Search className="w-4 h-4 text-jira-subtle shrink-0" />
+            <span className="truncate whitespace-nowrap text-xs md:text-sm text-slate-500 font-medium">
+              Search issues, epics, docs...
+            </span>
           </div>
-          <kbd className="text-[11px] bg-white border border-slate-300 px-1.5 py-0.5 rounded text-slate-500 font-mono">
+          <kbd className="text-[10px] bg-white border border-slate-300 px-1.5 py-0.5 rounded text-slate-500 font-mono shrink-0 ml-2 hidden sm:inline-block">
             Ctrl+K
           </kbd>
         </button>
+      </div>
 
-        {/* Confluence Spaces Shortcut */}
-        <button
-          onClick={() => setActiveView('confluence')}
-          className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition shadow-2xs ${
-            activeView === 'confluence'
-              ? 'bg-blue-50 text-jira-brand border-blue-300'
-              : 'bg-white hover:bg-slate-50 text-slate-700 border-jira-border'
-          }`}
-          title="Confluence Documentation Workspace"
-        >
-          <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-          <span className="hidden sm:inline">Confluence</span>
-        </button>
-
+      {/* Right: Actions, Notifications & User */}
+      <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
         {/* WezAI Assistant Header Launcher */}
         <button
           onClick={() => setIsRovoOpen(true)}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-bold transition shadow-xs group"
+          className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-bold transition shadow-xs shrink-0"
           title="Ask WezAI across Jira & Confluence"
         >
           <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-spin" style={{ animationDuration: '8s' }} />
-          <span>WezAI</span>
+          <span className="hidden sm:inline">WezAI</span>
           <span className="text-[9px] px-1 py-0.2 rounded bg-white/20 uppercase font-black tracking-wide">
             AI
           </span>
@@ -154,20 +146,17 @@ export default function TopNav() {
         {/* Team Personas Directory Launcher */}
         <button
           onClick={() => setIsPersonasModalOpen(true)}
-          className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition shadow-2xs ${
+          className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition shadow-2xs shrink-0 ${
             isPersonasModalOpen
               ? 'bg-indigo-50 text-indigo-700 border-indigo-300'
               : 'bg-white hover:bg-slate-50 text-slate-700 border-jira-border'
           }`}
           title="View all 6 Wezblue team personas & switch roles"
         >
-          <Users className="w-3.5 h-3.5 text-indigo-600" />
+          <Users className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
           <span className="hidden md:inline">Team Personas</span>
         </button>
-      </div>
 
-      {/* Right: Notifications & Persona Switcher */}
-      <div className="flex items-center space-x-4">
         {/* Notifications Popover */}
         <div className="relative">
           <button

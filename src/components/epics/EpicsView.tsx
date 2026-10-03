@@ -2,15 +2,30 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { Zap, Plus, CheckCircle2, ListTodo, Bookmark, Bug, CheckSquare } from 'lucide-react';
-import { IssueType } from '@/lib/types';
+import { Zap, Plus, CheckCircle2, ListTodo, Bookmark, Bug, CheckSquare, Pencil, Trash2, X, AlertTriangle } from 'lucide-react';
+import { Epic, IssueType } from '@/lib/types';
 
 export default function EpicsView() {
-  const { epics, issues, currentProject, setSelectedIssue, permissions, createEpic, showToast } = useApp();
+  const { 
+    epics, issues, currentProject, setSelectedIssue, permissions, 
+    createEpic, updateEpic, deleteEpic, showToast 
+  } = useApp();
+
+  // Create Epic Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [summary, setSummary] = useState('');
   const [color, setColor] = useState('#8777d9');
+
+  // Edit Epic Modal State
+  const [editingEpic, setEditingEpic] = useState<Epic | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editSummary, setEditSummary] = useState('');
+  const [editColor, setEditColor] = useState('#8777d9');
+  const [editStatus, setEditStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>('IN_PROGRESS');
+
+  // Delete Epic Confirmation State
+  const [deletingEpic, setDeletingEpic] = useState<Epic | null>(null);
 
   const typeIcons: Record<IssueType, React.ReactNode> = {
     STORY: <Bookmark className="w-3 h-3 text-emerald-600" />,
@@ -33,6 +48,39 @@ export default function EpicsView() {
       setName('');
       setSummary('');
       setIsModalOpen(false);
+    }
+  };
+
+  const openEditModal = (epic: Epic, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEditingEpic(epic);
+    setEditName(epic.name);
+    setEditSummary(epic.summary || '');
+    setEditColor(epic.color || '#8777d9');
+    setEditStatus(epic.status || 'IN_PROGRESS');
+  };
+
+  const handleUpdateEpic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEpic || !editName.trim()) return;
+
+    const updated = await updateEpic(editingEpic.id, {
+      name: editName.trim(),
+      summary: editSummary.trim(),
+      color: editColor,
+      status: editStatus,
+    });
+
+    if (updated) {
+      setEditingEpic(null);
+    }
+  };
+
+  const handleDeleteEpic = async () => {
+    if (!deletingEpic) return;
+    const ok = await deleteEpic(deletingEpic.id);
+    if (ok) {
+      setDeletingEpic(null);
     }
   };
 
@@ -94,7 +142,7 @@ export default function EpicsView() {
                 key={epic.id}
                 className="bg-white rounded-xl border border-jira-border shadow-xs hover:shadow-md transition p-5 space-y-4"
               >
-                {/* Epic Title & Color Pill */}
+                {/* Epic Title & Color Pill & Actions */}
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-2.5">
                     <div
@@ -109,11 +157,36 @@ export default function EpicsView() {
                     </div>
                   </div>
 
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    percent === 100 ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800'
-                  }`}>
-                    {percent === 100 ? 'COMPLETED' : 'IN PROGRESS'}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      percent === 100 ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800'
+                    }`}>
+                      {percent === 100 ? 'COMPLETED' : (epic.status || 'IN PROGRESS')}
+                    </span>
+
+                    {permissions.canEditIssue && (
+                      <button
+                        onClick={(e) => openEditModal(epic, e)}
+                        className="p-1.5 text-slate-400 hover:text-jira-brand hover:bg-blue-50 rounded transition"
+                        title="Edit Epic"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+
+                    {permissions.canDeleteIssue && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeletingEpic(epic);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition"
+                        title="Delete Epic"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {epic.summary && (
@@ -169,7 +242,16 @@ export default function EpicsView() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <form onSubmit={handleCreateEpic} className="w-full max-w-md bg-white rounded-xl shadow-2xl border border-jira-border p-6 space-y-4">
-            <h2 className="text-base font-bold text-jira-text">Create New Epic</h2>
+            <div className="flex items-center justify-between pb-2 border-b border-jira-border">
+              <h2 className="text-base font-bold text-jira-text">Create New Epic</h2>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-slate-700 rounded"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
             <div>
               <label className="block text-xs font-bold text-jira-subtle mb-1">Epic Name *</label>
@@ -179,7 +261,7 @@ export default function EpicsView() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="e.g. Zero-Trust Gateway Integration"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none font-medium"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none font-medium focus:border-jira-brand"
               />
             </div>
 
@@ -190,7 +272,7 @@ export default function EpicsView() {
                 value={summary}
                 onChange={e => setSummary(e.target.value)}
                 placeholder="Describe business outcomes, high-level deliverables..."
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none focus:border-jira-brand"
               />
             </div>
 
@@ -225,6 +307,135 @@ export default function EpicsView() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Edit Epic Modal */}
+      {editingEpic && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <form onSubmit={handleUpdateEpic} className="w-full max-w-md bg-white rounded-xl shadow-2xl border border-jira-border p-6 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-jira-border">
+              <h2 className="text-base font-bold text-jira-text flex items-center space-x-2">
+                <Pencil className="w-4 h-4 text-jira-brand" />
+                <span>Edit Epic: {editingEpic.name}</span>
+              </h2>
+              <button
+                type="button"
+                onClick={() => setEditingEpic(null)}
+                className="p-1 text-slate-400 hover:text-slate-700 rounded"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-jira-subtle mb-1">Epic Name *</label>
+              <input
+                type="text"
+                required
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+                placeholder="e.g. Zero-Trust Gateway Integration"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none font-medium focus:border-jira-brand"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-jira-subtle mb-1">Status</label>
+              <select
+                value={editStatus}
+                onChange={e => setEditStatus(e.target.value as any)}
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none font-bold"
+              >
+                <option value="TODO">TO DO</option>
+                <option value="IN_PROGRESS">IN PROGRESS</option>
+                <option value="DONE">DONE</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-jira-subtle mb-1">Strategic Summary</label>
+              <textarea
+                rows={3}
+                value={editSummary}
+                onChange={e => setEditSummary(e.target.value)}
+                placeholder="Describe business outcomes, high-level deliverables..."
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded outline-none focus:border-jira-brand"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-jira-subtle mb-1">Color Theme</label>
+              <div className="flex items-center space-x-2">
+                {['#8777d9', '#0052cc', '#36b37e', '#ff8b00', '#ff5630', '#00b8d9'].map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setEditColor(c)}
+                    style={{ backgroundColor: c }}
+                    className={`w-7 h-7 rounded-full transition ${editColor === c ? 'ring-2 ring-offset-2 ring-slate-800 scale-110' : 'opacity-80 hover:opacity-100'}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setEditingEpic(null)}
+                className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-1.5 bg-jira-brand hover:bg-jira-brandHover text-white text-xs font-bold rounded shadow-xs"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Delete Epic Confirmation Modal */}
+      {deletingEpic && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-white rounded-xl shadow-2xl border border-jira-border p-6 space-y-4">
+            <div className="flex items-center space-x-3 text-amber-600">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Delete Epic</h3>
+                <p className="text-xs text-slate-500">Are you sure you want to delete this epic?</p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 space-y-1">
+              <div className="font-bold text-slate-900">{deletingEpic.name}</div>
+              <p className="text-[11px] text-slate-500">
+                Any issues linked to this epic will be unlinked, but will not be deleted.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setDeletingEpic(null)}
+                className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteEpic}
+                className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded shadow-xs"
+              >
+                Delete Epic
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

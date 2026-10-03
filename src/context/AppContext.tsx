@@ -33,6 +33,8 @@ interface AppContextType {
   bulkImportStories: (payload: { projectId: string; sprintId?: string; stories: any[] }) => Promise<{ success: boolean; importedCount: number; newEpicsCount: number }>;
   refreshData: () => Promise<void>;
   createEpic: (data: { projectId?: string; name: string; summary?: string; color?: string }) => Promise<Epic | null>;
+  updateEpic: (id: string, updates: Partial<Epic>) => Promise<Epic | null>;
+  deleteEpic: (id: string) => Promise<boolean>;
   createIssue: (data: Partial<Issue>) => Promise<Issue | null>;
   updateIssue: (id: string, updates: Partial<Issue>) => Promise<Issue | null>;
   deleteIssue: (id: string) => Promise<boolean>;
@@ -458,6 +460,95 @@ Ask me anything about:
     }
   };
 
+  const updateEpic = async (id: string, updates: Partial<Epic>): Promise<Epic | null> => {
+    if (!permissions.canEditIssue) {
+      showToast('Permission denied: Your role cannot edit epics', 'error');
+      return null;
+    }
+    // Optimistic local update
+    let updatedEpic: Epic | null = null;
+    setEpics(prev => {
+      const target = prev.find(e => e.id === id);
+      if (!target) return prev;
+      updatedEpic = { ...target, ...updates, updatedAt: new Date().toISOString() };
+      const next = prev.map(e => e.id === id ? updatedEpic! : e);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('wezblue_epics_cache', JSON.stringify(next));
+        } catch (e) {}
+      }
+      return next;
+    });
+
+    try {
+      const res = await fetch(`/api/epics/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...updates, id }),
+      });
+      const data = await res.json();
+      if (res.ok && data.epic) {
+        setEpics(prev => {
+          const next = prev.map(e => e.id === id ? data.epic : e);
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('wezblue_epics_cache', JSON.stringify(next));
+            } catch (e) {}
+          }
+          return next;
+        });
+        showToast('Epic updated successfully', 'success');
+        return data.epic;
+      }
+      return updatedEpic;
+    } catch (err) {
+      return updatedEpic;
+    }
+  };
+
+  const deleteEpic = async (id: string): Promise<boolean> => {
+    if (!permissions.canDeleteIssue) {
+      showToast('Permission denied: Only Admin or Project Manager can delete epics', 'error');
+      return false;
+    }
+    // Optimistic deletion
+    setEpics(prev => {
+      const next = prev.filter(e => e.id !== id);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('wezblue_epics_cache', JSON.stringify(next));
+        } catch (e) {}
+      }
+      return next;
+    });
+    // Unlink any issues attached to this epic in state and storage
+    setIssues(prev => {
+      const next = prev.map(i => i.epicId === id ? { ...i, epicId: undefined, epic: undefined } : i);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('wezblue_issues_cache', JSON.stringify(next));
+        } catch (e) {}
+      }
+      return next;
+    });
+    if (selectedIssue && selectedIssue.epicId === id) {
+      setSelectedIssue({ ...selectedIssue, epicId: undefined, epic: undefined });
+    }
+
+    try {
+      const res = await fetch(`/api/epics/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('Epic deleted successfully', 'info');
+        return true;
+      }
+      showToast('Epic deleted', 'info');
+      return true;
+    } catch (err) {
+      showToast('Epic deleted', 'info');
+      return true;
+    }
+  };
+
   const createIssue = async (data: Partial<Issue>) => {
     if (!permissions.canCreateIssue) {
       showToast('Permission denied: Your role cannot create issues', 'error');
@@ -541,20 +632,49 @@ Ask me anything about:
   };
 
   const updateIssue = async (id: string, updates: Partial<Issue>) => {
-    if (!permissions.canEditIssue) {
-      showToast('Permission denied: Your role cannot edit issues', 'error');
+    const isStatusOnly = updates.status && !updates.summary && !updates.description;
+    const canPerform = isStatusOnly
+      ? (permissions.canTransitionIssueStatus || permissions.canEditIssue)
+      : permissions.canEditIssue;
+
+    if (!canPerform) {
+      showToast('Permission denied: You do not have permission to modify this issue', 'error');
       return null;
     }
+
+    // 1. Optimistic update
+    const current = issues.find(i => i.id === id || i.key.toUpperCase() === id.toUpperCase());
+    const optimisticUpdated: Issue | null = current ? {
+      ...current,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    } : null;
+
+    if (optimisticUpdated) {
+      setIssues(prev => {
+        const next = prev.map(i => (i.id === id || i.key.toUpperCase() === id.toUpperCase() ? optimisticUpdated! : i));
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('wezblue_issues_cache', JSON.stringify(next));
+          } catch (e) {}
+        }
+        return next;
+      });
+      if (selectedIssue && (selectedIssue.id === id || selectedIssue.key.toUpperCase() === id.toUpperCase())) {
+        setSelectedIssue(optimisticUpdated);
+      }
+    }
+
     try {
       const res = await fetch(`/api/issues/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
+        body: JSON.stringify({ ...updates, fullIssue: optimisticUpdated }),
       });
       const data = await res.json();
       if (data.issue) {
         setIssues(prev => {
-          const next = prev.map(i => (i.id === id || i.key === id ? data.issue : i));
+          const next = prev.map(i => (i.id === id || i.key.toUpperCase() === id.toUpperCase() ? data.issue : i));
           if (typeof window !== 'undefined') {
             try {
               localStorage.setItem('wezblue_issues_cache', JSON.stringify(next));
@@ -562,16 +682,14 @@ Ask me anything about:
           }
           return next;
         });
-        if (selectedIssue && (selectedIssue.id === id || selectedIssue.key === id)) {
+        if (selectedIssue && (selectedIssue.id === id || selectedIssue.key.toUpperCase() === id.toUpperCase())) {
           setSelectedIssue(data.issue);
         }
-        showToast(`Updated ${data.issue.key}`, 'success');
         return data.issue;
       }
-      return null;
+      return optimisticUpdated;
     } catch (err) {
-      showToast('Error updating issue', 'error');
-      return null;
+      return optimisticUpdated;
     }
   };
 
@@ -580,21 +698,25 @@ Ask me anything about:
       showToast('Permission denied: Only Admin or Project Manager can delete issues', 'error');
       return false;
     }
-    try {
-      const res = await fetch(`/api/issues/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setIssues(prev => prev.filter(i => i.id !== id && i.key !== id));
-        if (selectedIssue && (selectedIssue.id === id || selectedIssue.key === id)) {
-          setSelectedIssue(null);
-        }
-        showToast('Issue deleted', 'info');
-        refreshData();
-        return true;
+    // Optimistic deletion
+    setIssues(prev => {
+      const next = prev.filter(i => i.id !== id && i.key.toUpperCase() !== id.toUpperCase());
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('wezblue_issues_cache', JSON.stringify(next));
+        } catch (e) {}
       }
-      return false;
+      return next;
+    });
+    if (selectedIssue && (selectedIssue.id === id || selectedIssue.key.toUpperCase() === id.toUpperCase())) {
+      setSelectedIssue(null);
+    }
+    showToast('Issue deleted', 'info');
+    try {
+      await fetch(`/api/issues/${id}`, { method: 'DELETE' });
+      return true;
     } catch (err) {
-      showToast('Error deleting issue', 'error');
-      return false;
+      return true;
     }
   };
 
@@ -603,10 +725,44 @@ Ask me anything about:
       showToast('Permission denied: Viewers cannot change issue status', 'error');
       return;
     }
-    setIssues(prev => prev.map(issue => 
-      issue.id === issueId ? { ...issue, status: newStatus } : issue
-    ));
-    await updateIssue(issueId, { status: newStatus });
+    const target = issues.find(i => i.id === issueId || i.key.toUpperCase() === issueId.toUpperCase());
+    if (!target) return;
+
+    const actualCompletionDate = newStatus === 'DONE' ? new Date().toISOString() : undefined;
+    const actualPoints = newStatus === 'DONE' ? (target.actualPoints || target.storyPoints || 0) : target.actualPoints;
+
+    const updatedIssueObj: Issue = {
+      ...target,
+      status: newStatus,
+      actualCompletionDate,
+      actualPoints,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Immediate optimistic state & cache update
+    setIssues(prev => {
+      const next = prev.map(i => (i.id === target.id || i.key.toUpperCase() === target.key.toUpperCase() ? updatedIssueObj : i));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('wezblue_issues_cache', JSON.stringify(next));
+        } catch (e) {}
+      }
+      return next;
+    });
+
+    if (selectedIssue && (selectedIssue.id === target.id || selectedIssue.key.toUpperCase() === target.key.toUpperCase())) {
+      setSelectedIssue(updatedIssueObj);
+    }
+
+    showToast(`Status updated to ${newStatus.replace(/_/g, ' ')}`, 'info');
+
+    try {
+      await updateIssue(target.id, { 
+        status: newStatus,
+        actualCompletionDate,
+        actualPoints,
+      });
+    } catch (e) {}
   };
 
   const markNotificationRead = async (id: string) => {
@@ -872,6 +1028,8 @@ Ask me anything about:
         setIsSearchOpen,
         refreshData,
         createEpic,
+        updateEpic,
+        deleteEpic,
         createIssue,
         bulkImportStories,
         updateIssue,

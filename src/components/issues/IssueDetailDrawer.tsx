@@ -12,7 +12,7 @@ import {
 
 export default function IssueDetailDrawer() {
   const { 
-    selectedIssue, setSelectedIssue, updateIssue, deleteIssue, 
+    selectedIssue, setSelectedIssue, updateIssue, deleteIssue, moveIssueStatus,
     users, sprints, epics, issues, permissions, currentProject, currentUser, showToast,
     docs, openDocInConfluence, setIsRovoOpen, askRovo
   } = useApp();
@@ -56,7 +56,8 @@ export default function IssueDetailDrawer() {
   const linkedChildIssues = issues.filter(i => i.parentStoryId === selectedIssue.id);
 
   const handleStatusChange = async (newStatus: IssueStatus) => {
-    await updateIssue(selectedIssue.id, { status: newStatus });
+    setSelectedIssue({ ...selectedIssue, status: newStatus });
+    await moveIssueStatus(selectedIssue.id, newStatus);
   };
 
   const handleAssigneeChange = async (userId: string) => {
@@ -1145,15 +1146,18 @@ export default function IssueDetailDrawer() {
           {/* Right Column: Workflow, Dates, Estimation & Work Logging (4 cols) */}
           <div className="md:col-span-4 p-6 bg-slate-50/50 space-y-5 text-xs">
             {/* Status Transition Selector (6 Flow Stages) */}
-            <div>
-              <label className="block text-[11px] font-bold text-jira-subtle uppercase tracking-wider mb-1.5">
-                Workflow Status
-              </label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-[11px] font-bold text-jira-subtle uppercase tracking-wider">
+                  Workflow Status
+                </label>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Flow</span>
+              </div>
               <select
                 value={selectedIssue.status}
                 onChange={e => handleStatusChange(e.target.value as IssueStatus)}
                 disabled={!permissions.canTransitionIssueStatus}
-                className={`w-full py-2 px-2.5 rounded-md font-extrabold border outline-none cursor-pointer ${statusColors[selectedIssue.status]}`}
+                className={`w-full py-2 px-2.5 rounded-md font-extrabold border outline-none cursor-pointer shadow-xs ${statusColors[selectedIssue.status]}`}
               >
                 <option value="BACKLOG">BACKLOG</option>
                 <option value="TODO">TO DO</option>
@@ -1163,6 +1167,55 @@ export default function IssueDetailDrawer() {
                 <option value="IN_STAKEHOLDER_VALIDATION">IN STAKEHOLDER VALIDATION</option>
                 <option value="DONE">DONE</option>
               </select>
+
+              {/* Fast 1-Click Workflow Stepper */}
+              <div className="p-2.5 bg-white rounded-lg border border-slate-200 space-y-2 shadow-2xs">
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                  <span>Fast Transition Stepper</span>
+                  {selectedIssue.status !== 'DONE' && permissions.canTransitionIssueStatus && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const flow: IssueStatus[] = ['TODO', 'IN_PROGRESS', 'UNDER_REVIEW', 'IN_QA', 'IN_STAKEHOLDER_VALIDATION', 'DONE'];
+                        const curIdx = flow.indexOf(selectedIssue.status);
+                        const nextStatus = curIdx >= 0 && curIdx < flow.length - 1 ? flow[curIdx + 1] : 'IN_PROGRESS';
+                        handleStatusChange(nextStatus);
+                      }}
+                      className="text-[10px] font-bold text-jira-brand hover:underline flex items-center space-x-0.5"
+                    >
+                      <span>Next Step ➔</span>
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { id: 'TODO' as IssueStatus, label: 'To Do', color: 'border-blue-300 hover:bg-blue-50 text-blue-800' },
+                    { id: 'IN_PROGRESS' as IssueStatus, label: 'In Progress', color: 'border-amber-300 hover:bg-amber-50 text-amber-800' },
+                    { id: 'UNDER_REVIEW' as IssueStatus, label: 'Under Review', color: 'border-purple-300 hover:bg-purple-50 text-purple-800' },
+                    { id: 'IN_QA' as IssueStatus, label: 'In QA', color: 'border-indigo-300 hover:bg-indigo-50 text-indigo-800' },
+                    { id: 'IN_STAKEHOLDER_VALIDATION' as IssueStatus, label: 'Stakeholder Valid.', color: 'border-pink-300 hover:bg-pink-50 text-pink-800' },
+                    { id: 'DONE' as IssueStatus, label: 'Done ✓', color: 'border-emerald-300 hover:bg-emerald-50 text-emerald-800' },
+                  ].map(step => {
+                    const isActive = selectedIssue.status === step.id;
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        onClick={() => handleStatusChange(step.id)}
+                        disabled={!permissions.canTransitionIssueStatus}
+                        className={`px-2 py-1.5 rounded text-[10px] font-extrabold border text-left truncate transition ${
+                          isActive 
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-xs ring-1 ring-slate-800' 
+                            : `bg-slate-50 text-slate-700 ${step.color}`
+                        }`}
+                        title={`Move to ${step.label}`}
+                      >
+                        {isActive ? '● ' : ''}{step.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Link to Parent User Story (for Task or Bug) */}
