@@ -8,7 +8,7 @@ import { X, Bookmark, CheckSquare, Bug, Zap } from 'lucide-react';
 export default function CreateIssueModal() {
   const { 
     isCreateModalOpen, setIsCreateModalOpen, currentProject, 
-    users, epics, sprints, issues, createIssue 
+    users, epics, sprints, issues, createIssue, createEpic 
   } = useApp();
 
   const [type, setType] = useState<IssueType>('STORY');
@@ -64,6 +64,16 @@ export default function CreateIssueModal() {
     if (!summary.trim() || !plannedCompletionDate) return;
 
     setIsSubmitting(true);
+
+    if (type === 'EPIC') {
+      await createEpic({
+        projectId: currentProject.id,
+        name: summary.trim(),
+        summary: description.trim(),
+        color: '#8777d9',
+      });
+    }
+
     await createIssue({
       projectId: currentProject.id,
       type,
@@ -105,7 +115,7 @@ export default function CreateIssueModal() {
     STORY: { label: 'Story', icon: <Bookmark className="w-4 h-4 text-emerald-600" />, color: 'border-emerald-500' },
     TASK: { label: 'Task', icon: <CheckSquare className="w-4 h-4 text-blue-600" />, color: 'border-blue-500' },
     BUG: { label: 'Bug', icon: <Bug className="w-4 h-4 text-red-600" />, color: 'border-red-500' },
-    EPIC: { label: 'Epic', icon: null, color: '' },
+    EPIC: { label: 'Epic', icon: <Zap className="w-4 h-4 text-purple-600" />, color: 'border-purple-500' },
   };
 
   return (
@@ -132,8 +142,8 @@ export default function CreateIssueModal() {
             <label className="block text-xs font-bold text-jira-subtle uppercase tracking-wider mb-1.5">
               Issue Type <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['STORY', 'TASK', 'BUG'] as IssueType[]).map(t => (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {(['STORY', 'TASK', 'BUG', 'EPIC'] as IssueType[]).map(t => (
                 <button
                   type="button"
                   key={t}

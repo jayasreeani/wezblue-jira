@@ -5,7 +5,8 @@ import { useApp } from '@/context/AppContext';
 import { Issue, Sprint, IssueType } from '@/lib/types';
 import { 
   Bookmark, CheckSquare, Bug, Zap, Plus, 
-  Play, CheckCircle2, ChevronDown, ChevronRight, MoreHorizontal, ArrowRight, Clock, Calendar, FileSpreadsheet 
+  Play, CheckCircle2, ChevronDown, ChevronRight, MoreHorizontal, ArrowRight, Clock, Calendar, FileSpreadsheet,
+  Search, X, RefreshCw
 } from 'lucide-react';
 
 export default function BacklogView() {
@@ -22,6 +23,8 @@ export default function BacklogView() {
 
   const [newSprintName, setNewSprintName] = useState('');
   const [isCreatingSprint, setIsCreatingSprint] = useState(false);
+  const [search, setSearch] = useState('');
+  const [phaseFilter, setPhaseFilter] = useState('ALL');
 
   const toggleExpand = (id: string) => {
     setExpandedSprints(prev => ({ ...prev, [id]: !prev[id] }));
@@ -78,7 +81,20 @@ export default function BacklogView() {
     await updateIssue(issueId, { sprintId: sprintId || undefined });
   };
 
-  const backlogIssues = issues.filter(i => !i.sprintId);
+  const q = search.toLowerCase().trim();
+  const filteredIssues = issues.filter(i => {
+    if (q) {
+      const matchKey = i.key.toLowerCase().includes(q);
+      const matchSummary = i.summary.toLowerCase().includes(q);
+      const matchFeature = i.feature && i.feature.toLowerCase().includes(q);
+      const matchPhase = i.phase && i.phase.toLowerCase().includes(q);
+      if (!matchKey && !matchSummary && !matchFeature && !matchPhase) return false;
+    }
+    if (phaseFilter !== 'ALL' && i.phase !== phaseFilter) return false;
+    return true;
+  });
+
+  const backlogIssues = filteredIssues.filter(i => !i.sprintId || i.sprintId === '');
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto bg-slate-100/40 p-6 space-y-6">
@@ -120,6 +136,58 @@ export default function BacklogView() {
         </div>
       </div>
 
+      {/* Quick Search & Filters Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-jira-border shadow-2xs">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[260px]">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Filter backlog & sprints by key, summary, or feature..."
+              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-jira-brand font-medium"
+            />
+            {search && (
+              <button 
+                onClick={() => setSearch('')} 
+                className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center space-x-1 text-xs">
+            <span className="text-slate-400 text-[11px] font-semibold mr-1">Phase:</span>
+            {['ALL', 'MVP', 'Phase 1', 'Phase 2'].map(p => (
+              <button
+                key={p}
+                onClick={() => setPhaseFilter(p)}
+                className={`px-2.5 py-1 rounded text-xs font-bold transition ${
+                  phaseFilter === p
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => refreshData()}
+            className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 transition"
+            title="Refresh Backlog from server"
+          >
+            <RefreshCw className="w-3 h-3 text-slate-500" />
+            <span>Sync</span>
+          </button>
+        </div>
+      </div>
+
       {/* Create Sprint Dialog */}
       {isCreatingSprint && (
         <form onSubmit={handleCreateSprint} className="p-4 bg-white rounded-xl border border-jira-brand shadow-sm flex items-center space-x-3">
@@ -151,7 +219,7 @@ export default function BacklogView() {
       {/* Sprints Containers */}
       <div className="space-y-5">
         {sprints.map(sprint => {
-          const sprintIssues = issues.filter(i => i.sprintId === sprint.id);
+          const sprintIssues = filteredIssues.filter(i => i.sprintId === sprint.id);
           const totalPts = sprintIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
           const totalHours = sprintIssues.reduce((sum, i) => sum + (i.estimatedHours || 0), 0);
           const loggedHours = sprintIssues.reduce((sum, i) => sum + (i.actualHours || 0), 0);
@@ -406,8 +474,28 @@ export default function BacklogView() {
               ))}
 
               {backlogIssues.length === 0 && (
-                <div className="p-6 text-center text-xs text-slate-400 font-medium">
-                  Backlog is clean! All issues are currently scheduled in active or future sprints.
+                <div className="p-8 text-center space-y-3">
+                  <div className="text-xs text-slate-500 font-medium">
+                    {search ? `No backlog issues match "${search}".` : 'Backlog is empty! All user stories have either been scheduled into sprints or none have been imported yet.'}
+                  </div>
+                  {!search && permissions.canCreateIssue && (
+                    <div className="flex items-center justify-center space-x-2">
+                      <button
+                        onClick={() => setIsBulkUploadOpen(true)}
+                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-lg transition"
+                      >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Import Stories via Excel</span>
+                      </button>
+                      <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="inline-flex items-center space-x-1 px-3 py-1.5 bg-jira-brand hover:bg-jira-brandHover text-white text-xs font-semibold rounded-lg transition"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Create User Story</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

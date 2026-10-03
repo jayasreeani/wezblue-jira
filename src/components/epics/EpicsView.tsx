@@ -6,7 +6,7 @@ import { Zap, Plus, CheckCircle2, ListTodo, Bookmark, Bug, CheckSquare } from 'l
 import { IssueType } from '@/lib/types';
 
 export default function EpicsView() {
-  const { epics, issues, currentProject, setSelectedIssue, permissions, refreshData, showToast } = useApp();
+  const { epics, issues, currentProject, setSelectedIssue, permissions, createEpic, showToast } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [summary, setSummary] = useState('');
@@ -23,26 +23,16 @@ export default function EpicsView() {
     e.preventDefault();
     if (!name.trim()) return;
 
-    try {
-      const res = await fetch('/api/epics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectId: currentProject.id,
-          name: name.trim(),
-          summary: summary.trim(),
-          color,
-        }),
-      });
-      if (res.ok) {
-        showToast('Epic created successfully', 'success');
-        setName('');
-        setSummary('');
-        setIsModalOpen(false);
-        refreshData();
-      }
-    } catch (err) {
-      showToast('Failed to create epic', 'error');
+    const epic = await createEpic({
+      projectId: currentProject.id,
+      name: name.trim(),
+      summary: summary.trim(),
+      color,
+    });
+    if (epic) {
+      setName('');
+      setSummary('');
+      setIsModalOpen(false);
     }
   };
 
@@ -69,85 +59,111 @@ export default function EpicsView() {
       </div>
 
       {/* Epics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {epics.map(epic => {
-          const childIssues = issues.filter(i => i.epicId === epic.id);
-          const totalPoints = childIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
-          const doneIssues = childIssues.filter(i => i.status === 'DONE');
-          const donePoints = doneIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
-          const percent = totalPoints > 0 ? Math.round((donePoints / totalPoints) * 100) : (childIssues.length > 0 && doneIssues.length === childIssues.length ? 100 : 0);
-
-          return (
-            <div
-              key={epic.id}
-              className="bg-white rounded-xl border border-jira-border shadow-xs hover:shadow-md transition p-5 space-y-4"
+      {epics.length === 0 ? (
+        <div className="bg-white rounded-xl border border-jira-border p-12 text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mx-auto shadow-xs">
+            <Zap className="w-6 h-6 fill-current" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-800">No Epics Created Yet</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+              Epics help you organize and track high-level strategic themes across multiple sprints. Create your first epic below, or upload user stories via Excel to automatically generate epics.
+            </p>
+          </div>
+          {permissions.canCreateIssue && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center space-x-1.5 px-4 py-2 bg-jira-brand hover:bg-jira-brandHover text-white text-xs font-semibold rounded-lg shadow-xs transition"
             >
-              {/* Epic Title & Color Pill */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-2.5">
-                  <div
-                    style={{ backgroundColor: epic.color }}
-                    className="w-7 h-7 rounded-lg text-white flex items-center justify-center font-bold text-xs shadow-xs"
-                  >
-                    <Zap className="w-4 h-4 fill-current" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-jira-text">{epic.name}</h3>
-                    <span className="text-[11px] text-slate-500">{childIssues.length} linked issues</span>
-                  </div>
-                </div>
+              <Plus className="w-4 h-4" />
+              <span>Create First Epic</span>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {epics.map(epic => {
+            const childIssues = issues.filter(i => i.epicId === epic.id);
+            const totalPoints = childIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
+            const doneIssues = childIssues.filter(i => i.status === 'DONE');
+            const donePoints = doneIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
+            const percent = totalPoints > 0 ? Math.round((donePoints / totalPoints) * 100) : (childIssues.length > 0 && doneIssues.length === childIssues.length ? 100 : 0);
 
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                  percent === 100 ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800'
-                }`}>
-                  {percent === 100 ? 'COMPLETED' : 'IN PROGRESS'}
-                </span>
-              </div>
-
-              {epic.summary && (
-                <p className="text-xs text-slate-600 leading-relaxed">{epic.summary}</p>
-              )}
-
-              {/* Progress Bar */}
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold mb-1">
-                  <span className="text-slate-600">Completion</span>
-                  <span className="text-jira-text">{percent}% ({donePoints}/{totalPoints} pts)</span>
-                </div>
-                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                  <div
-                    style={{ width: `${percent}%`, backgroundColor: epic.color }}
-                    className="h-full rounded-full transition-all duration-300"
-                  />
-                </div>
-              </div>
-
-              {/* Child Issues Quick List */}
-              <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                <div className="text-[11px] font-bold text-jira-subtle uppercase tracking-wider mb-1">
-                  Linked Issues
-                </div>
-                {childIssues.slice(0, 4).map(child => (
-                  <div
-                    key={child.id}
-                    onClick={() => setSelectedIssue(child)}
-                    className="p-1.5 rounded hover:bg-slate-50 flex items-center justify-between cursor-pointer transition text-xs"
-                  >
-                    <div className="flex items-center space-x-2 truncate pr-2">
-                      {typeIcons[child.type]}
-                      <span className="font-bold text-blue-600 text-[11px]">{child.key}</span>
-                      <span className="text-slate-700 truncate">{child.summary}</span>
+            return (
+              <div
+                key={epic.id}
+                className="bg-white rounded-xl border border-jira-border shadow-xs hover:shadow-md transition p-5 space-y-4"
+              >
+                {/* Epic Title & Color Pill */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <div
+                      style={{ backgroundColor: epic.color }}
+                      className="w-7 h-7 rounded-lg text-white flex items-center justify-center font-bold text-xs shadow-xs"
+                    >
+                      <Zap className="w-4 h-4 fill-current" />
                     </div>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
-                      {child.status}
-                    </span>
+                    <div>
+                      <h3 className="font-bold text-sm text-jira-text">{epic.name}</h3>
+                      <span className="text-[11px] text-slate-500">{childIssues.length} linked issues</span>
+                    </div>
                   </div>
-                ))}
+
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    percent === 100 ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800'
+                  }`}>
+                    {percent === 100 ? 'COMPLETED' : 'IN PROGRESS'}
+                  </span>
+                </div>
+
+                {epic.summary && (
+                  <p className="text-xs text-slate-600 leading-relaxed">{epic.summary}</p>
+                )}
+
+                {/* Progress Bar */}
+                <div>
+                  <div className="flex items-center justify-between text-xs font-semibold mb-1">
+                    <span className="text-slate-600">Completion</span>
+                    <span className="text-jira-text">{percent}% ({donePoints}/{totalPoints} pts)</span>
+                  </div>
+                  <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                    <div
+                      style={{ width: `${percent}%`, backgroundColor: epic.color }}
+                      className="h-full rounded-full transition-all duration-300"
+                    />
+                  </div>
+                </div>
+
+                {/* Child Issues Quick List */}
+                <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                  <div className="text-[11px] font-bold text-jira-subtle uppercase tracking-wider mb-1">
+                    Linked Issues
+                  </div>
+                  {childIssues.slice(0, 4).map(child => (
+                    <div
+                      key={child.id}
+                      onClick={() => setSelectedIssue(child)}
+                      className="p-1.5 rounded hover:bg-slate-50 flex items-center justify-between cursor-pointer transition text-xs"
+                    >
+                      <div className="flex items-center space-x-2 truncate pr-2">
+                        {typeIcons[child.type]}
+                        <span className="font-bold text-blue-600 text-[11px]">{child.key}</span>
+                        <span className="text-slate-700 truncate">{child.summary}</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
+                        {child.status}
+                      </span>
+                    </div>
+                  ))}
+                  {childIssues.length === 0 && (
+                    <div className="text-[11px] text-slate-400 italic">No issues linked to this epic yet</div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Create Epic Modal */}
       {isModalOpen && (

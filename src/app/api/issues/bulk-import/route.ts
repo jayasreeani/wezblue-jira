@@ -82,11 +82,14 @@ export async function POST(req: Request) {
       newValue: `Imported ${createdIssues.length} stories${newEpicsCount > 0 ? ` (${newEpicsCount} new epics)` : ''}`,
     });
 
+    const allProjectEpics = db.getEpics(projectId);
+
     return NextResponse.json({
       success: true,
       importedCount: createdIssues.length,
       newEpicsCount,
       issues: createdIssues,
+      epics: allProjectEpics,
       message: `Successfully imported ${createdIssues.length} user stories${newEpicsCount > 0 ? ` and created ${newEpicsCount} new epic(s)` : ''}!`,
     }, { status: 201 });
   } catch (error) {

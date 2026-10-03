@@ -32,6 +32,7 @@ interface AppContextType {
   setIsSearchOpen: (open: boolean) => void;
   bulkImportStories: (payload: { projectId: string; sprintId?: string; stories: any[] }) => Promise<{ success: boolean; importedCount: number; newEpicsCount: number }>;
   refreshData: () => Promise<void>;
+  createEpic: (data: { projectId?: string; name: string; summary?: string; color?: string }) => Promise<Epic | null>;
   createIssue: (data: Partial<Issue>) => Promise<Issue | null>;
   updateIssue: (id: string, updates: Partial<Issue>) => Promise<Issue | null>;
   deleteIssue: (id: string) => Promise<boolean>;
@@ -138,6 +139,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setCurrentUser(found);
         }
       }
+      try {
+        const cachedIssues = JSON.parse(localStorage.getItem('wezblue_issues_cache') || '[]');
+        if (Array.isArray(cachedIssues) && cachedIssues.length > 0) {
+          setIssues(cachedIssues);
+        }
+        const cachedEpics = JSON.parse(localStorage.getItem('wezblue_epics_cache') || '[]');
+        if (Array.isArray(cachedEpics) && cachedEpics.length > 0) {
+          setEpics(cachedEpics);
+        }
+      } catch (e) {}
     }
   }, []);
 
@@ -326,9 +337,38 @@ Ask me anything about:
           setCurrentProject(projData.projects[0]);
         }
       }
-      if (issuesData.issues) setIssues(issuesData.issues);
+      // Intelligent merge for issues: Server issues + client-cached issues
+      let finalIssues = issuesData.issues || [];
+      if (typeof window !== 'undefined') {
+        try {
+          const cached = JSON.parse(localStorage.getItem('wezblue_issues_cache') || '[]');
+          if (Array.isArray(cached) && cached.length > 0) {
+            const serverIds = new Set(finalIssues.map((i: any) => i.id));
+            const localOnly = cached.filter((i: any) => !serverIds.has(i.id));
+            finalIssues = [...finalIssues, ...localOnly];
+          }
+          localStorage.setItem('wezblue_issues_cache', JSON.stringify(finalIssues));
+        } catch (e) {}
+      }
+      setIssues(finalIssues);
+
       if (sprintsData.sprints) setSprints(sprintsData.sprints);
-      if (epicsData.epics) setEpics(epicsData.epics);
+
+      // Intelligent merge for epics: Server epics + client-cached epics
+      let finalEpics = epicsData.epics || [];
+      if (typeof window !== 'undefined') {
+        try {
+          const cachedEpics = JSON.parse(localStorage.getItem('wezblue_epics_cache') || '[]');
+          if (Array.isArray(cachedEpics) && cachedEpics.length > 0) {
+            const serverEpicIds = new Set(finalEpics.map((e: any) => e.id));
+            const localOnlyEpics = cachedEpics.filter((e: any) => !serverEpicIds.has(e.id));
+            finalEpics = [...finalEpics, ...localOnlyEpics];
+          }
+          localStorage.setItem('wezblue_epics_cache', JSON.stringify(finalEpics));
+        } catch (e) {}
+      }
+      setEpics(finalEpics);
+
       if (actData.logs) setActivityLogs(actData.logs);
       if (notifData.notifications) setNotifications(notifData.notifications);
       if (spacesData.spaces) setSpaces(spacesData.spaces);
@@ -383,6 +423,41 @@ Ask me anything about:
     }
   };
 
+  const createEpic = async (data: { projectId?: string; name: string; summary?: string; color?: string }): Promise<Epic | null> => {
+    try {
+      const res = await fetch('/api/epics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: data.projectId || currentProject.id,
+          name: data.name.trim(),
+          summary: (data.summary || '').trim(),
+          color: data.color || '#8777d9',
+        }),
+      });
+      const resData = await res.json();
+      if (res.ok && resData.epic) {
+        setEpics(prev => {
+          const next = [resData.epic, ...prev.filter(e => e.id !== resData.epic.id)];
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('wezblue_epics_cache', JSON.stringify(next));
+            } catch (e) {}
+          }
+          return next;
+        });
+        showToast('Epic created successfully', 'success');
+        return resData.epic;
+      } else {
+        showToast(resData.error || 'Failed to create epic', 'error');
+        return null;
+      }
+    } catch (err: any) {
+      showToast('Failed to create epic', 'error');
+      return null;
+    }
+  };
+
   const createIssue = async (data: Partial<Issue>) => {
     if (!permissions.canCreateIssue) {
       showToast('Permission denied: Your role cannot create issues', 'error');
@@ -396,6 +471,15 @@ Ask me anything about:
       });
       const resData = await res.json();
       if (resData.issue) {
+        setIssues(prev => {
+          const next = [resData.issue, ...prev.filter(i => i.id !== resData.issue.id)];
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('wezblue_issues_cache', JSON.stringify(next));
+            } catch (e) {}
+          }
+          return next;
+        });
         showToast(`Issue ${resData.issue.key} created successfully`, 'success');
         refreshData();
         return resData.issue;
@@ -419,8 +503,36 @@ Ask me anything about:
         showToast(data.error || 'Bulk import failed', 'error');
         return { success: false, importedCount: 0, newEpicsCount: 0 };
       }
+
+      // Immediately merge into issues in state and localStorage cache
+      if (data.issues && Array.isArray(data.issues) && data.issues.length > 0) {
+        setIssues(prev => {
+          const newIds = new Set(data.issues.map((i: any) => i.id));
+          const next = [...data.issues, ...prev.filter(p => !newIds.has(p.id))];
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('wezblue_issues_cache', JSON.stringify(next));
+            } catch (e) {}
+          }
+          return next;
+        });
+      }
+
+      // Immediately merge into epics in state and localStorage cache
+      if (data.epics && Array.isArray(data.epics) && data.epics.length > 0) {
+        setEpics(prev => {
+          const incomingIds = new Set(data.epics.map((e: any) => e.id));
+          const next = [...data.epics, ...prev.filter(e => !incomingIds.has(e.id))];
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('wezblue_epics_cache', JSON.stringify(next));
+            } catch (e) {}
+          }
+          return next;
+        });
+      }
+
       showToast(data.message || `Successfully imported ${data.importedCount} user stories!`, 'success');
-      await refreshData();
       return { success: true, importedCount: data.importedCount, newEpicsCount: data.newEpicsCount };
     } catch (err) {
       showToast('Bulk import failed. Please check file format.', 'error');
@@ -441,12 +553,19 @@ Ask me anything about:
       });
       const data = await res.json();
       if (data.issue) {
-        setIssues(prev => prev.map(i => (i.id === id || i.key === id ? data.issue : i)));
+        setIssues(prev => {
+          const next = prev.map(i => (i.id === id || i.key === id ? data.issue : i));
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('wezblue_issues_cache', JSON.stringify(next));
+            } catch (e) {}
+          }
+          return next;
+        });
         if (selectedIssue && (selectedIssue.id === id || selectedIssue.key === id)) {
           setSelectedIssue(data.issue);
         }
         showToast(`Updated ${data.issue.key}`, 'success');
-        refreshData();
         return data.issue;
       }
       return null;
@@ -752,6 +871,7 @@ Ask me anything about:
         isSearchOpen,
         setIsSearchOpen,
         refreshData,
+        createEpic,
         createIssue,
         bulkImportStories,
         updateIssue,

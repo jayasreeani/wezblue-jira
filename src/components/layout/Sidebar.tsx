@@ -20,9 +20,6 @@ export default function Sidebar() {
     { id: 'sprints', label: 'Sprint Management', icon: Calendar },
   ];
 
-  const knowledgeNav = [
-    { id: 'confluence', label: 'Confluence Spaces', icon: BookOpen },
-  ];
 
   const analyticsNav = [
     { id: 'dashboard', label: 'Reports & Dashboard', icon: BarChart3 },
@@ -89,35 +86,49 @@ export default function Sidebar() {
             </nav>
           </div>
 
-          {/* Knowledge & AI Section */}
+          {/* Confluence Section */}
+          <div>
+            {!collapsed && (
+              <div className="px-4 text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span className="flex items-center space-x-1.5 font-extrabold">
+                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Confluence</span>
+                </span>
+                <span className="text-[9px] bg-blue-100 text-blue-700 font-extrabold px-1.5 py-0.2 rounded">Workspace</span>
+              </div>
+            )}
+            <nav className="space-y-1 px-2">
+              <button
+                onClick={() => setActiveView('confluence')}
+                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold transition ${
+                  activeView === 'confluence'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-800 bg-blue-50/70 hover:bg-blue-100 border border-blue-200/70'
+                }`}
+                title={collapsed ? "Confluence Spaces & Documentation" : undefined}
+              >
+                <BookOpen className={`w-4 h-4 flex-shrink-0 ${activeView === 'confluence' ? 'text-white' : 'text-blue-600'}`} />
+                {!collapsed && (
+                  <div className="flex items-center justify-between w-full">
+                    <span>Confluence Spaces</span>
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded font-extrabold ${activeView === 'confluence' ? 'bg-white/20 text-white' : 'bg-blue-200 text-blue-800'}`}>
+                      DOCS
+                    </span>
+                  </div>
+                )}
+              </button>
+            </nav>
+          </div>
+
+          {/* AI Intelligence Section */}
           <div>
             {!collapsed && (
               <div className="px-4 text-[11px] font-bold text-jira-subtle uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                <span>Knowledge & AI</span>
+                <span>AI Intelligence</span>
                 <span className="text-[9px] bg-purple-100 text-purple-700 font-bold px-1.5 py-0.2 rounded">WezAI</span>
               </div>
             )}
             <nav className="space-y-0.5 px-2">
-              {knowledgeNav.map(item => {
-                const Icon = item.icon;
-                const active = activeView === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveView(item.id)}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-semibold transition ${
-                      active
-                        ? 'bg-blue-100/70 text-jira-brand'
-                        : 'text-slate-700 hover:bg-slate-200/60 hover:text-jira-text'
-                    }`}
-                    title={collapsed ? item.label : undefined}
-                  >
-                    <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-jira-brand' : 'text-slate-500'}`} />
-                    {!collapsed && <span>{item.label}</span>}
-                  </button>
-                );
-              })}
-
               {/* WezAI Assistant Trigger */}
               <button
                 onClick={() => setIsRovoOpen(true)}
@@ -127,7 +138,7 @@ export default function Sidebar() {
                 <Sparkles className="w-4 h-4 text-purple-600 animate-pulse flex-shrink-0" />
                 {!collapsed && (
                   <div className="flex items-center justify-between w-full">
-                    <span>WezAI Chat</span>
+                    <span>WezAI Assistant</span>
                     <span className="text-[9px] bg-purple-200 text-purple-800 font-extrabold px-1.5 py-0.2 rounded-full uppercase">
                       Ask AI
                     </span>

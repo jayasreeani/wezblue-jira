@@ -98,11 +98,22 @@ export default function BulkUploadModal() {
           return '';
         };
 
-        const epicName = getVal(['Epic / Module', 'Epic/Module', 'Epic', 'Module']);
-        const feature = getVal(['Feature', 'Feature Name', 'Component']);
-        const userStory = getVal(['User Story', 'UserStory', 'Story', 'Summary', 'Narrative', 'Requirement']);
-        const acceptanceCriteria = getVal(['Acceptance Criteria', 'AcceptanceCriteria', 'AC', 'Criteria']);
-        const phase = getVal(['Phase', 'Release Phase', 'Target Phase']) || 'MVP';
+        const epicName = getVal(['Epic / Module', 'Epic/Module', 'Epic', 'Module', 'Epic Name', 'Theme', 'Initiative', 'Parent', 'Epics']);
+        const feature = getVal(['Feature', 'Feature Name', 'Component', 'Submodule', 'Category', 'Features']);
+        let userStory = getVal(['User Story', 'UserStory', 'Story', 'Summary', 'Narrative', 'Requirement', 'Description', 'Title', 'Task', 'Name', 'Details', 'Item', 'Work Item', 'User Stories', 'Stories']);
+        const acceptanceCriteria = getVal(['Acceptance Criteria', 'AcceptanceCriteria', 'AC', 'Criteria', 'Acceptance test', 'Conditions of Satisfaction', 'ACs']);
+        const phase = getVal(['Phase', 'Release Phase', 'Target Phase', 'Release', 'Milestone', 'Version', 'Iteration']) || 'MVP';
+
+        // Resilient fallback: if userStory not found by header name, pick the first non-empty descriptive cell
+        if (!userStory) {
+          for (const [colName, colVal] of Object.entries(row)) {
+            const valStr = String(colVal || '').trim();
+            if (valStr && valStr.length > 3 && !['id', 'key', 'index', 'sl', 'no', 's.no'].includes(colName.toLowerCase())) {
+              userStory = valStr;
+              break;
+            }
+          }
+        }
 
         const isValid = userStory.length > 0;
         return {
