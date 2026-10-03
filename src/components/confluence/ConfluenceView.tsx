@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ConfluenceDoc, ConfluenceSpace, DocCategory, DocStatus } from '@/lib/types';
 import { 
   BookOpen, Plus, Search, Edit3, Trash2, ExternalLink, 
   Sparkles, CheckCircle2, Clock, FileText, ChevronRight,
   Cpu, Terminal, FolderPlus, Tag, Layers, ArrowLeft,
-  Share2, Eye, EyeOff, Check, X, ShieldAlert, AlertCircle, Info
+  Share2, Eye, EyeOff, Check, X, ShieldAlert, AlertCircle, Info,
+  Paperclip, Download, UploadCloud, File, FileSpreadsheet, Image
 } from 'lucide-react';
 
 const CATEGORY_COLORS: Record<DocCategory, { bg: string; text: string; border: string }> = {
@@ -31,7 +32,7 @@ export default function ConfluenceView() {
   const { 
     spaces, docs, selectedDoc, setSelectedDoc, createDoc, updateDoc, 
     deleteDoc, createSpace, issues, setSelectedIssue, setIsRovoOpen, 
-    askRovo, currentUser 
+    askRovo, currentUser, addDocAttachment, deleteDocAttachment 
   } = useApp();
 
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>('all');
@@ -40,6 +41,39 @@ export default function ConfluenceView() {
   const [isEditing, setIsEditing] = useState(false);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [showNewSpaceModal, setShowNewSpaceModal] = useState(false);
+
+  const docFileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+
+  const formatFileSize = (bytes: number) => {
+    if (!bytes) return '0 B';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeDoc) return;
+
+    setIsUploadingAttachment(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const fileUrl = (reader.result as string) || '';
+        await addDocAttachment(activeDoc.id, {
+          filename: file.name,
+          fileSize: file.size,
+          fileType: file.type || 'application/octet-stream',
+          fileUrl,
+        });
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsUploadingAttachment(false);
+      if (docFileInputRef.current) docFileInputRef.current.value = '';
+    }
+  };
 
   // Edit form state
   const [editTitle, setEditTitle] = useState('');
@@ -815,6 +849,100 @@ Requests a 6-digit one-time code for resident login.
               {/* Rendered Document Body */}
               <div className="prose prose-slate max-w-none text-slate-800">
                 {renderMarkdown(activeDoc.content)}
+              </div>
+
+              {/* Document Attachments Section */}
+              <div className="mt-10 pt-6 border-t border-jira-border space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Paperclip className="w-4 h-4 text-jira-brand" />
+                    <h3 className="font-bold text-sm text-jira-text">
+                      Document Attachments ({(activeDoc.attachments || []).length})
+                    </h3>
+                  </div>
+
+                  <input
+                    type="file"
+                    ref={docFileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    disabled={isUploadingAttachment}
+                    onClick={() => docFileInputRef.current?.click()}
+                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-jira-brand font-semibold text-xs transition border border-blue-200 cursor-pointer disabled:opacity-50"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    <span>{isUploadingAttachment ? 'Attaching...' : 'Attach File or Spec'}</span>
+                  </button>
+                </div>
+
+                {(!activeDoc.attachments || activeDoc.attachments.length === 0) ? (
+                  <div 
+                    onClick={() => docFileInputRef.current?.click()}
+                    className="border-2 border-dashed border-slate-200 hover:border-blue-300 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/50 hover:bg-blue-50/20"
+                  >
+                    <Paperclip className="w-6 h-6 text-slate-400 mx-auto mb-1.5" />
+                    <div className="text-xs font-semibold text-slate-700">No attachments on this page yet</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">Click here to attach PDFs, design specs, architecture diagrams, or spreadsheets</div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {activeDoc.attachments.map(att => (
+                      <div
+                        key={att.id}
+                        className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-blue-200 transition shadow-2xs group"
+                      >
+                        <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
+                          <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                            {att.filename.endsWith('.pdf') ? (
+                              <FileText className="w-4 h-4 text-red-500" />
+                            ) : att.filename.match(/\.(xlsx|xls|csv)$/i) ? (
+                              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                            ) : att.filename.match(/\.(png|jpg|jpeg|webp|svg)$/i) ? (
+                              <Image className="w-4 h-4 text-purple-600" />
+                            ) : (
+                              <File className="w-4 h-4 text-blue-600" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-bold text-jira-text truncate" title={att.filename}>
+                              {att.filename}
+                            </div>
+                            <div className="text-[10px] text-slate-400">
+                              {formatFileSize(att.fileSize)} • {new Date(att.createdAt || att.uploadedAt || '').toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-1 shrink-0">
+                          {att.fileUrl && (
+                            <a
+                              href={att.fileUrl}
+                              download={att.filename}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1.5 rounded hover:bg-blue-50 text-slate-500 hover:text-jira-brand transition"
+                              title="Download attachment"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => deleteDocAttachment(activeDoc.id, att.id)}
+                            className="p-1.5 rounded hover:bg-red-50 text-slate-400 hover:text-red-600 transition"
+                            title="Delete attachment"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -4,7 +4,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { 
   User, Project, Sprint, Epic, Issue, ActivityLog, Notification, 
   Role, IssueStatus, ROLE_PERMISSIONS, RolePermissions,
-  ConfluenceSpace, ConfluenceDoc, RovoMessage, RovoSource
+  ConfluenceSpace, ConfluenceDoc, RovoMessage, RovoSource,
+  RoadmapInitiative, Attachment
 } from '@/lib/types';
 import { INITIAL_USERS } from '@/lib/seed-data';
 
@@ -68,6 +69,10 @@ interface AppContextType {
   login: (email: string, password?: string, quickLogin?: boolean, userId?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 
+  // Projects
+  updateProject: (id: string, updates: Partial<Project>) => Promise<Project | null>;
+  deleteProject: (id: string) => Promise<boolean>;
+
   // Confluence Documentation
   spaces: ConfluenceSpace[];
   docs: ConfluenceDoc[];
@@ -79,6 +84,16 @@ interface AppContextType {
   deleteDoc: (id: string) => Promise<boolean>;
   createSpace: (space: { key: string; name: string; description?: string; color?: string; icon?: string }) => Promise<ConfluenceSpace | null>;
   openDocInConfluence: (docOrId: string | ConfluenceDoc) => void;
+  addDocAttachment: (docId: string, fileData: { filename: string; fileSize: number; fileType: string; fileUrl?: string }) => Promise<Attachment | null>;
+  deleteDocAttachment: (docId: string, attachmentId: string) => Promise<boolean>;
+
+  // Organisation Roadmap
+  roadmapInitiatives: RoadmapInitiative[];
+  setRoadmapInitiatives: React.Dispatch<React.SetStateAction<RoadmapInitiative[]>>;
+  fetchRoadmapInitiatives: () => Promise<void>;
+  createRoadmapInitiative: (data: Partial<RoadmapInitiative>) => Promise<RoadmapInitiative | null>;
+  updateRoadmapInitiative: (id: string, data: Partial<RoadmapInitiative>) => Promise<RoadmapInitiative | null>;
+  deleteRoadmapInitiative: (id: string) => Promise<boolean>;
 
   // Atlassian ROVO AI Assistant
   isRovoOpen: boolean;
@@ -154,10 +169,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Confluence & ROVO State
+  // Confluence & ROVO & Roadmap State
   const [spaces, setSpaces] = useState<ConfluenceSpace[]>([]);
   const [docs, setDocs] = useState<ConfluenceDoc[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<ConfluenceDoc | null>(null);
+  const [roadmapInitiatives, setRoadmapInitiatives] = useState<RoadmapInitiative[]>([]);
   const [isRovoOpen, setIsRovoOpen] = useState(false);
   const [isRovoLoading, setIsRovoLoading] = useState(false);
   const [rovoMessages, setRovoMessages] = useState<RovoMessage[]>([
@@ -378,6 +394,7 @@ Ask me anything about:
         setDocs(docsData.docs);
         setSelectedDoc(prev => prev ? docsData.docs.find((d: ConfluenceDoc) => d.id === prev.id) || docsData.docs[0] : docsData.docs[0]);
       }
+      fetchRoadmapInitiatives();
     } catch (err) {
       console.error('Failed to refresh data', err);
     }
@@ -889,6 +906,186 @@ Ask me anything about:
     setActiveView('confluence');
   };
 
+  // Project Management
+  const updateProject = async (id: string, updates: Partial<Project>): Promise<Project | null> => {
+    try {
+      const res = await fetch(`/api/projects/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json();
+      if (res.ok && data.project) {
+        setProjects(prev => prev.map(p => p.id === id ? data.project : p));
+        if (currentProject.id === id) {
+          setCurrentProject(data.project);
+        }
+        showToast('Project updated successfully', 'success');
+        return data.project;
+      }
+      showToast(data.error || 'Failed to update project', 'error');
+      return null;
+    } catch {
+      showToast('Error updating project', 'error');
+      return null;
+    }
+  };
+
+  const deleteProject = async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        const remaining = projects.filter(p => p.id !== id);
+        setProjects(remaining);
+        if (currentProject.id === id) {
+          if (remaining.length > 0) {
+            setCurrentProject(remaining[0]);
+          }
+        }
+        await refreshData();
+        showToast('Project deleted successfully', 'info');
+        return true;
+      }
+      showToast(data.error || 'Failed to delete project', 'error');
+      return false;
+    } catch {
+      showToast('Error deleting project', 'error');
+      return false;
+    }
+  };
+
+  // Doc Attachments
+  const addDocAttachment = async (docId: string, fileData: { filename: string; fileSize: number; fileType: string; fileUrl?: string }): Promise<Attachment | null> => {
+    try {
+      const res = await fetch('/api/attachments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docId, ...fileData }),
+      });
+      const data = await res.json();
+      if (res.ok && data.attachment) {
+        setDocs(prev => prev.map(d => {
+          if (d.id === docId) {
+            const nextAttachments = [...(d.attachments || []), data.attachment];
+            return { ...d, attachments: nextAttachments };
+          }
+          return d;
+        }));
+        if (selectedDoc && selectedDoc.id === docId) {
+          setSelectedDoc(prev => prev ? {
+            ...prev,
+            attachments: [...(prev.attachments || []), data.attachment],
+          } : null);
+        }
+        showToast('Attachment uploaded successfully', 'success');
+        return data.attachment;
+      }
+      showToast('Failed to upload attachment', 'error');
+      return null;
+    } catch {
+      showToast('Error uploading attachment', 'error');
+      return null;
+    }
+  };
+
+  const deleteDocAttachment = async (docId: string, attachmentId: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/attachments?docId=${docId}&attachmentId=${attachmentId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setDocs(prev => prev.map(d => {
+          if (d.id === docId) {
+            return {
+              ...d,
+              attachments: (d.attachments || []).filter(a => a.id !== attachmentId),
+            };
+          }
+          return d;
+        }));
+        if (selectedDoc && selectedDoc.id === docId) {
+          setSelectedDoc(prev => prev ? {
+            ...prev,
+            attachments: (prev.attachments || []).filter(a => a.id !== attachmentId),
+          } : null);
+        }
+        showToast('Attachment removed', 'info');
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  // Organisation Roadmap
+  const fetchRoadmapInitiatives = async () => {
+    try {
+      const res = await fetch('/api/roadmap');
+      const data = await res.json();
+      if (res.ok && data.initiatives) {
+        setRoadmapInitiatives(data.initiatives);
+      }
+    } catch (e) {
+      console.error('Failed to load roadmap initiatives', e);
+    }
+  };
+
+  const createRoadmapInitiative = async (data: Partial<RoadmapInitiative>): Promise<RoadmapInitiative | null> => {
+    try {
+      const res = await fetch('/api/roadmap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const resData = await res.json();
+      if (res.ok && resData.initiative) {
+        setRoadmapInitiatives(prev => [...prev, resData.initiative]);
+        showToast('Strategic initiative added to Roadmap', 'success');
+        return resData.initiative;
+      }
+      showToast(resData.error || 'Failed to create initiative', 'error');
+      return null;
+    } catch {
+      showToast('Error creating initiative', 'error');
+      return null;
+    }
+  };
+
+  const updateRoadmapInitiative = async (id: string, data: Partial<RoadmapInitiative>): Promise<RoadmapInitiative | null> => {
+    try {
+      const res = await fetch(`/api/roadmap/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const resData = await res.json();
+      if (res.ok && resData.initiative) {
+        setRoadmapInitiatives(prev => prev.map(i => i.id === id ? resData.initiative : i));
+        showToast('Roadmap initiative updated', 'success');
+        return resData.initiative;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const deleteRoadmapInitiative = async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/roadmap/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setRoadmapInitiatives(prev => prev.filter(i => i.id !== id));
+        showToast('Initiative removed from roadmap', 'info');
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
   const askRovo = async (question: string) => {
     if (!question.trim()) return;
     const userMsg: RovoMessage = {
@@ -908,6 +1105,14 @@ Ask me anything about:
         body: JSON.stringify({
           message: question,
           history: rovoMessages.slice(-6),
+          context: {
+            issues,
+            sprints,
+            epics,
+            docs,
+            projects,
+            initiatives: roadmapInitiatives,
+          }
         }),
       });
       const data = await res.json();
@@ -1057,6 +1262,10 @@ Ask me anything about:
         login,
         logout,
 
+        // Projects
+        updateProject,
+        deleteProject,
+
         // Confluence
         spaces,
         docs,
@@ -1068,6 +1277,16 @@ Ask me anything about:
         deleteDoc,
         createSpace,
         openDocInConfluence,
+        addDocAttachment,
+        deleteDocAttachment,
+
+        // Organisation Roadmap
+        roadmapInitiatives,
+        setRoadmapInitiatives,
+        fetchRoadmapInitiatives,
+        createRoadmapInitiative,
+        updateRoadmapInitiative,
+        deleteRoadmapInitiative,
 
         // ROVO AI
         isRovoOpen,

@@ -11,6 +11,7 @@ import DashboardView from '@/components/reports/DashboardView';
 import UserManagementView from '@/components/users/UserManagementView';
 import ProjectSettingsView from '@/components/projects/ProjectSettingsView';
 import ConfluenceView from '@/components/confluence/ConfluenceView';
+import RoadmapView from '@/components/roadmap/RoadmapView';
 import RovoChatDrawer from '@/components/rovo/RovoChatDrawer';
 
 export default function HomePage() {
@@ -18,6 +19,8 @@ export default function HomePage() {
 
   const renderView = () => {
     switch (activeView) {
+      case 'roadmap':
+        return <RoadmapView />;
       case 'kanban':
         return <KanbanBoard />;
       case 'scrum':

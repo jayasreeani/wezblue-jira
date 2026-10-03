@@ -143,19 +143,22 @@ export default function TopNav() {
           </span>
         </button>
 
-        {/* Team Personas Directory Launcher */}
-        <button
-          onClick={() => setIsPersonasModalOpen(true)}
-          className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition shadow-2xs shrink-0 ${
-            isPersonasModalOpen
-              ? 'bg-indigo-50 text-indigo-700 border-indigo-300'
-              : 'bg-white hover:bg-slate-50 text-slate-700 border-jira-border'
-          }`}
-          title="View all 6 Wezblue team personas & switch roles"
-        >
-          <Users className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-          <span className="hidden md:inline">Team Personas</span>
-        </button>
+        {/* Team Personas Directory Launcher - Admin RBAC Simulator Mode */}
+        {currentUser.role === 'ADMIN' && (
+          <button
+            onClick={() => setIsPersonasModalOpen(true)}
+            className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition shadow-2xs shrink-0 ${
+              isPersonasModalOpen
+                ? 'bg-indigo-50 text-indigo-700 border-indigo-300'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border-jira-border'
+            }`}
+            title="Admin RBAC Simulator: Test permission boundaries across team personas"
+          >
+            <Shield className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+            <span className="hidden md:inline">Admin Simulator</span>
+            <span className="text-[9px] px-1 rounded bg-indigo-100 text-indigo-800 font-bold">RBAC</span>
+          </button>
+        )}
 
         {/* Notifications Popover */}
         <div className="relative">
@@ -266,48 +269,52 @@ export default function TopNav() {
                 </button>
               </div>
 
-              <div className="px-3.5 py-1.5 bg-slate-50/30 border-b border-jira-border flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">
-                  Switch Persona (RBAC Tester):
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    setIsPersonasModalOpen(true);
-                  }}
-                  className="text-[10px] text-jira-brand hover:underline font-bold"
-                >
-                  View All
-                </button>
-              </div>
+              {currentUser.role === 'ADMIN' && (
+                <>
+                  <div className="px-3.5 py-1.5 bg-indigo-50/50 border-b border-jira-border flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-indigo-900 uppercase">
+                      Admin RBAC Simulator:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        setIsPersonasModalOpen(true);
+                      }}
+                      className="text-[10px] text-jira-brand hover:underline font-bold"
+                    >
+                      View All
+                    </button>
+                  </div>
 
-              <div className="max-h-64 overflow-y-auto divide-y divide-slate-50 py-1">
-                {users.map(u => (
-                  <button
-                    key={u.id}
-                    onClick={() => {
-                      switchUser(u.id);
-                      setShowUserMenu(false);
-                    }}
-                    className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between hover:bg-blue-50 transition ${currentUser.id === u.id ? 'bg-blue-50/70 font-semibold' : ''}`}
-                  >
-                    <div className="flex items-center space-x-2.5">
-                      <img src={u.avatar} alt={u.name} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
-                      <div>
-                        <div className="text-xs text-jira-text font-medium leading-none">{u.name}</div>
-                        <div className="flex items-center space-x-1.5 mt-1">
-                          <span className={`text-[9px] px-1 py-0.2 rounded font-bold border ${ROLE_COLORS[u.role] || 'bg-slate-100'}`}>
-                            {u.jobTitle || ROLE_LABELS[u.role] || u.role}
-                          </span>
-                          <span className="text-[10px] text-slate-400 truncate max-w-[100px]">{u.department}</span>
+                  <div className="max-h-64 overflow-y-auto divide-y divide-slate-50 py-1">
+                    {users.map(u => (
+                      <button
+                        key={u.id}
+                        onClick={() => {
+                          switchUser(u.id);
+                          setShowUserMenu(false);
+                        }}
+                        className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between hover:bg-blue-50 transition ${currentUser.id === u.id ? 'bg-blue-50/70 font-semibold' : ''}`}
+                      >
+                        <div className="flex items-center space-x-2.5">
+                          <img src={u.avatar} alt={u.name} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                          <div>
+                            <div className="text-xs text-jira-text font-medium leading-none">{u.name}</div>
+                            <div className="flex items-center space-x-1.5 mt-1">
+                              <span className={`text-[9px] px-1 py-0.2 rounded font-bold border ${ROLE_COLORS[u.role] || 'bg-slate-100'}`}>
+                                {u.jobTitle || ROLE_LABELS[u.role] || u.role}
+                              </span>
+                              <span className="text-[10px] text-slate-400 truncate max-w-[100px]">{u.department}</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    {currentUser.id === u.id && <Check className="w-4 h-4 text-jira-brand" />}
-                  </button>
-                ))}
-              </div>
+                        {currentUser.id === u.id && <Check className="w-4 h-4 text-jira-brand" />}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
 
               <div className="p-2 border-t border-jira-border bg-slate-50">
                 <button

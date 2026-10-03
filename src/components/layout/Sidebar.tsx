@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { 
   Kanban, Compass, ListTodo, Zap, Calendar, 
   BarChart3, Users, Settings, ChevronLeft, ChevronRight,
-  ShieldCheck, BookOpen, Sparkles
+  ShieldCheck, BookOpen, Sparkles, Layers
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -13,10 +13,11 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
   const planningNav = [
+    { id: 'roadmap', label: 'Organisation Roadmap', icon: Compass },
     { id: 'kanban', label: 'Kanban Board', icon: Kanban },
-    { id: 'scrum', label: 'Active Scrum Board', icon: Compass },
+    { id: 'scrum', label: 'Active Scrum Board', icon: Layers },
     { id: 'backlog', label: 'Backlog & Sprints', icon: ListTodo },
-    { id: 'epics', label: 'Epics & Roadmap', icon: Zap },
+    { id: 'epics', label: 'Epics & Features', icon: Zap },
     { id: 'sprints', label: 'Sprint Management', icon: Calendar },
   ];
 

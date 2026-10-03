@@ -211,7 +211,7 @@ export default function UserManagementView() {
             className="flex items-center space-x-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-jira-text border border-slate-300 rounded-lg text-xs font-semibold shadow-xs transition"
           >
             <UserCog className="w-3.5 h-3.5 text-jira-brand" />
-            <span>Edit My Profile & Photo</span>
+            <span>My Profile & Security Settings</span>
           </button>
 
           {permissions.canManageUsers && (
@@ -268,16 +268,6 @@ export default function UserManagementView() {
                             alt={u.name}
                             className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-2xs"
                           />
-                          {isCurrent && (
-                            <button
-                              type="button"
-                              onClick={() => setIsProfileModalOpen(true)}
-                              className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition"
-                              title="Update profile picture"
-                            >
-                              <Camera className="w-3.5 h-3.5" />
-                            </button>
-                          )}
                         </div>
                         <div>
                           <div className="font-bold text-jira-text flex items-center space-x-1.5">
@@ -334,9 +324,10 @@ export default function UserManagementView() {
                           <button
                             type="button"
                             onClick={() => setIsProfileModalOpen(true)}
-                            className="px-2.5 py-1 bg-blue-50 text-jira-brand hover:bg-blue-100 font-bold rounded-md text-xs transition"
+                            className="px-2.5 py-1 bg-blue-50 text-jira-brand hover:bg-blue-100 font-bold rounded-md text-xs transition flex items-center space-x-1"
                           >
-                            Edit Photo
+                            <UserCog className="w-3 h-3 text-jira-brand" />
+                            <span>My Settings</span>
                           </button>
                         ) : permissions.canManageUsers ? (
                           <button

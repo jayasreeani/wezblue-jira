@@ -94,7 +94,8 @@ export interface Subtask {
 
 export interface Attachment {
   id: string;
-  issueId: string;
+  issueId?: string;
+  docId?: string;
   filename: string;
   fileUrl: string;
   fileSize: number;
@@ -102,6 +103,7 @@ export interface Attachment {
   uploaderId: string;
   uploader?: User;
   createdAt: string;
+  uploadedAt?: string;
 }
 
 export interface Comment {
@@ -412,6 +414,23 @@ export interface ConfluenceDoc {
   authorId: string;
   author?: User;
   linkedIssueKeys: string[];
+  attachments?: Attachment[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RoadmapInitiative {
+  id: string;
+  title: string;
+  description?: string;
+  track: string;
+  targetQuarter: string;
+  startDate?: string;
+  endDate?: string;
+  status: 'PLANNED' | 'IN_PROGRESS' | 'ACHIEVED';
+  progress: number;
+  owner?: string;
+  linkedEpicIds?: string[];
   createdAt: string;
   updatedAt: string;
 }

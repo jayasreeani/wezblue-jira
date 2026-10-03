@@ -4,13 +4,91 @@ import {
   User, Project, Sprint, Epic, Issue, Comment, Attachment, ActivityLog, Notification, 
   Role, IssueStatus, Priority, BugSeverity, WorkLog,
   ConfluenceSpace, ConfluenceDoc, RovoMessage, RovoSource, DocStatus, DocCategory,
-  RolePermissions, ROLE_PERMISSIONS
+  RolePermissions, ROLE_PERMISSIONS, RoadmapInitiative
 } from './types';
 import { 
   INITIAL_USERS, INITIAL_PROJECTS, INITIAL_SPRINTS, 
   INITIAL_EPICS, INITIAL_ISSUES, INITIAL_NOTIFICATIONS, INITIAL_ACTIVITY_LOGS,
   INITIAL_CONFLUENCE_SPACES, INITIAL_CONFLUENCE_DOCS
 } from './seed-data';
+
+export const INITIAL_ROADMAP_INITIATIVES: RoadmapInitiative[] = [
+  {
+    id: "init-1",
+    title: "Zero-Trust Enterprise Authentication & SSO",
+    description: "Multi-tenant OAuth2/SAML with biometric mobile MFA and session anomaly detection.",
+    track: "Security & Compliance",
+    targetQuarter: "Q1 2026",
+    startDate: "2026-01-10",
+    endDate: "2026-03-31",
+    status: "IN_PROGRESS",
+    progress: 85,
+    owner: "Althaf Thajudeen",
+    linkedEpicIds: ["epic-1"],
+    createdAt: "2026-01-01T08:00:00.000Z",
+    updatedAt: "2026-10-01T08:00:00.000Z",
+  },
+  {
+    id: "init-2",
+    title: "Event-Driven Microservices Mesh & Kafka Bus",
+    description: "High-throughput asynchronous messaging pipeline for real-time task notifications.",
+    track: "Core Platform & Microservices",
+    targetQuarter: "Q2 2026",
+    startDate: "2026-03-01",
+    endDate: "2026-06-30",
+    status: "IN_PROGRESS",
+    progress: 60,
+    owner: "Abhijith Mohan",
+    linkedEpicIds: ["epic-2"],
+    createdAt: "2026-01-01T08:00:00.000Z",
+    updatedAt: "2026-10-01T08:00:00.000Z",
+  },
+  {
+    id: "init-3",
+    title: "Next-Gen Mobile App 3.0 (iOS & Android)",
+    description: "Complete UI/UX overhaul with offline caching, push alerts, and biometric quick approve.",
+    track: "Enterprise Mobile Apps",
+    targetQuarter: "Q3 2026",
+    startDate: "2026-06-01",
+    endDate: "2026-09-30",
+    status: "PLANNED",
+    progress: 25,
+    owner: "Vineeth M",
+    linkedEpicIds: [],
+    createdAt: "2026-01-01T08:00:00.000Z",
+    updatedAt: "2026-10-01T08:00:00.000Z",
+  },
+  {
+    id: "init-4",
+    title: "Multi-Cloud FinOps & Automated AI Observability",
+    description: "Infrastructure cost optimization, auto-scaling Kubernetes clusters, and AI health probes.",
+    track: "DevOps & Cloud Governance",
+    targetQuarter: "Q4 2026",
+    startDate: "2026-09-01",
+    endDate: "2026-12-31",
+    status: "PLANNED",
+    progress: 10,
+    owner: "Ramees Raja",
+    linkedEpicIds: [],
+    createdAt: "2026-01-01T08:00:00.000Z",
+    updatedAt: "2026-10-01T08:00:00.000Z",
+  },
+  {
+    id: "init-5",
+    title: "Autonomous Agile AI Agent (WezAI 2.0)",
+    description: "Autonomous sprint backlog groomer, velocity forecaster, and automated code review assistant.",
+    track: "Core Platform & Microservices",
+    targetQuarter: "H1 2027",
+    startDate: "2027-01-01",
+    endDate: "2027-06-30",
+    status: "PLANNED",
+    progress: 0,
+    owner: "Jayasree Kuniyil",
+    linkedEpicIds: [],
+    createdAt: "2026-01-01T08:00:00.000Z",
+    updatedAt: "2026-10-01T08:00:00.000Z",
+  }
+];
 
 const LOCAL_DATA_DIR = path.join(process.cwd(), 'data');
 const BASE_DB_FILE = path.join(LOCAL_DATA_DIR, 'wezblue_db.json');
@@ -27,6 +105,7 @@ class JiraDataStore {
   private activityLogs: ActivityLog[] = [...INITIAL_ACTIVITY_LOGS];
   private spaces: ConfluenceSpace[] = [...INITIAL_CONFLUENCE_SPACES];
   private docs: ConfluenceDoc[] = [...INITIAL_CONFLUENCE_DOCS];
+  private roadmapInitiatives: RoadmapInitiative[] = [...INITIAL_ROADMAP_INITIATIVES];
   private currentUser: User = INITIAL_USERS[0];
   private rolePermissions: Record<Role, RolePermissions> = { ...ROLE_PERMISSIONS };
 
@@ -55,6 +134,7 @@ class JiraDataStore {
           if (data.activityLogs && Array.isArray(data.activityLogs)) this.activityLogs = data.activityLogs;
           if (data.spaces && Array.isArray(data.spaces)) this.spaces = data.spaces;
           if (data.docs && Array.isArray(data.docs)) this.docs = data.docs;
+          if (data.roadmapInitiatives && Array.isArray(data.roadmapInitiatives)) this.roadmapInitiatives = data.roadmapInitiatives;
           if (data.rolePermissions && typeof data.rolePermissions === 'object') {
             this.rolePermissions = { ...ROLE_PERMISSIONS, ...data.rolePermissions };
           }
@@ -86,6 +166,7 @@ class JiraDataStore {
           activityLogs: this.activityLogs,
           spaces: this.spaces,
           docs: this.docs,
+          roadmapInitiatives: this.roadmapInitiatives,
           rolePermissions: this.rolePermissions,
           currentUser: this.currentUser,
         };
@@ -358,6 +439,31 @@ class JiraDataStore {
     return newProj;
   }
 
+  updateProject(id: string, updates: Partial<Project>) {
+    const index = this.projects.findIndex(p => p.id === id || p.key === id);
+    if (index === -1) return null;
+    this.projects[index] = {
+      ...this.projects[index],
+      ...updates,
+      key: updates.key ? updates.key.toUpperCase() : this.projects[index].key,
+      updatedAt: new Date().toISOString(),
+    };
+    this.persist();
+    return this.projects[index];
+  }
+
+  deleteProject(id: string) {
+    const index = this.projects.findIndex(p => p.id === id || p.key === id);
+    if (index === -1) return false;
+    const proj = this.projects[index];
+    this.projects.splice(index, 1);
+    this.issues = this.issues.filter(i => i.projectId !== proj.id);
+    this.sprints = this.sprints.filter(s => s.projectId !== proj.id);
+    this.epics = this.epics.filter(e => e.projectId !== proj.id);
+    this.persist();
+    return true;
+  }
+
   getSprints(projectId?: string) {
     if (projectId) return this.sprints.filter(s => s.projectId === projectId);
     return this.sprints;
@@ -525,6 +631,10 @@ class JiraDataStore {
       ...doc,
       author: this.users.find(u => u.id === doc.authorId),
       space: this.spaces.find(s => s.id === doc.spaceId),
+      attachments: (doc.attachments || []).map(a => ({
+        ...a,
+        uploader: this.users.find(u => u.id === a.uploaderId) || this.currentUser,
+      })),
     };
   }
 
@@ -988,6 +1098,7 @@ class JiraDataStore {
     if (data.status !== undefined) doc.status = data.status;
     if (data.category !== undefined) doc.category = data.category;
     if (data.parentId !== undefined) doc.parentId = data.parentId;
+    if (data.attachments !== undefined) doc.attachments = data.attachments;
     if (data.linkedIssueKeys !== undefined) {
       doc.linkedIssueKeys = data.linkedIssueKeys;
       data.linkedIssueKeys.forEach(key => {
@@ -1018,8 +1129,101 @@ class JiraDataStore {
     return false;
   }
 
-  // ================= Atlassian ROVO Cross-System AI Engine =================
-  rovoChat(message: string, _history: RovoMessage[] = []): { answer: string; sources: RovoSource[] } {
+  addDocAttachment(docId: string, fileData: { filename: string; fileSize: number; fileType: string; fileUrl?: string }) {
+    const doc = this.docs.find(d => d.id === docId);
+    if (!doc) return null;
+    if (!doc.attachments) doc.attachments = [];
+    const att: Attachment = {
+      id: 'doc-att-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      docId: doc.id,
+      filename: fileData.filename,
+      fileSize: fileData.fileSize,
+      fileType: fileData.fileType,
+      fileUrl: fileData.fileUrl || '',
+      createdAt: new Date().toISOString(),
+      uploadedAt: new Date().toISOString(),
+      uploaderId: this.currentUser?.id || 'user-jayasree',
+      uploader: this.currentUser,
+    };
+    doc.attachments.push(att);
+    doc.updatedAt = new Date().toISOString();
+    this.persist();
+    return att;
+  }
+
+  deleteDocAttachment(docId: string, attachmentId: string) {
+    const doc = this.docs.find(d => d.id === docId);
+    if (!doc || !doc.attachments) return false;
+    const idx = doc.attachments.findIndex(a => a.id === attachmentId);
+    if (idx !== -1) {
+      doc.attachments.splice(idx, 1);
+      doc.updatedAt = new Date().toISOString();
+      this.persist();
+      return true;
+    }
+    return false;
+  }
+
+  // ================= Organisation Roadmap =================
+  getRoadmapInitiatives() {
+    return this.roadmapInitiatives;
+  }
+
+  getRoadmapInitiativeById(id: string) {
+    return this.roadmapInitiatives.find(i => i.id === id);
+  }
+
+  createRoadmapInitiative(data: Partial<RoadmapInitiative>) {
+    const newInit: RoadmapInitiative = {
+      id: 'init-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      title: data.title || 'New Strategic Initiative',
+      description: data.description || '',
+      track: data.track || 'Core Platform & Microservices',
+      targetQuarter: data.targetQuarter || 'Q2 2026',
+      startDate: data.startDate || new Date().toISOString().slice(0, 10),
+      endDate: data.endDate || new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10),
+      status: data.status || 'PLANNED',
+      progress: data.progress !== undefined ? data.progress : 0,
+      owner: data.owner || this.currentUser.name,
+      linkedEpicIds: data.linkedEpicIds || [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.roadmapInitiatives.push(newInit);
+    this.persist();
+    return newInit;
+  }
+
+  updateRoadmapInitiative(id: string, data: Partial<RoadmapInitiative>) {
+    const init = this.roadmapInitiatives.find(i => i.id === id);
+    if (!init) return null;
+    Object.assign(init, data, { updatedAt: new Date().toISOString() });
+    this.persist();
+    return init;
+  }
+
+  deleteRoadmapInitiative(id: string) {
+    const idx = this.roadmapInitiatives.findIndex(i => i.id === id);
+    if (idx !== -1) {
+      this.roadmapInitiatives.splice(idx, 1);
+      this.persist();
+      return true;
+    }
+    return false;
+  }
+
+  // ================= Atlassian ROVO / WezAI Cross-System AI Engine =================
+  rovoChat(
+    message: string, 
+    _history: RovoMessage[] = [],
+    context?: {
+      issues?: Issue[];
+      sprints?: Sprint[];
+      epics?: Epic[];
+      docs?: ConfluenceDoc[];
+      projects?: Project[];
+    }
+  ): { answer: string; sources: RovoSource[] } {
     const query = message.trim();
     const qLower = query.toLowerCase();
     const sources: RovoSource[] = [];
@@ -1030,46 +1234,64 @@ class JiraDataStore {
       }
     };
 
-    // 1. Direct Ticket Match (e.g. WEZ-101, WEZ-102, etc.)
-    const ticketMatches = query.match(/WEZ-\d+/gi);
+    // Hydrate dataset using either context payload (client cache) or internal store
+    const activeIssues = (context?.issues && context.issues.length > 0) ? context.issues : this.issues;
+    const activeSprints = (context?.sprints && context.sprints.length > 0) ? context.sprints : this.sprints;
+    const activeEpics = (context?.epics && context.epics.length > 0) ? context.epics : this.epics;
+    const activeDocs = (context?.docs && context.docs.length > 0) ? context.docs : this.docs;
+    const activeUsers = this.users;
+
+    // 1. Direct Ticket Match (e.g. WEZ-101, WB-101, PRJ-101, etc.)
+    const ticketMatches = query.match(/([A-Za-z]{2,10})-\d+/gi);
     if (ticketMatches && ticketMatches.length > 0) {
       const matchedKeys = Array.from(new Set(ticketMatches.map(k => k.toUpperCase())));
-      const matchedIssues = this.issues.filter(i => matchedKeys.includes(i.key.toUpperCase()));
+      const matchedIssues = activeIssues.filter(i => matchedKeys.includes(i.key.toUpperCase()));
       
       if (matchedIssues.length > 0) {
         let answer = `### 🔍 Information for ${matchedKeys.join(', ')}\n\n`;
         matchedIssues.forEach(issue => {
-          const hydrated = this.hydrateIssue(issue);
+          const assignee = activeUsers.find(u => u.id === issue.assigneeId);
+          const sprint = activeSprints.find(s => s.id === issue.sprintId);
+          const epic = activeEpics.find(e => e.id === issue.epicId);
+
           addSource({
             type: 'jira',
-            id: hydrated.id,
-            keyOrTitle: hydrated.key,
-            snippet: `${hydrated.type}: ${hydrated.summary} (${hydrated.status})`
+            id: issue.id,
+            keyOrTitle: issue.key,
+            snippet: `${issue.type}: ${issue.summary} (${issue.status})`
           });
 
-          answer += `#### **[${hydrated.key}] ${hydrated.summary}**\n`;
-          answer += `- **Type**: \`${hydrated.type}\` | **Priority**: \`${hydrated.priority}\` | **Status**: \`${hydrated.status.replace(/_/g, ' ')}\`\n`;
-          if (hydrated.assignee) answer += `- **Assignee**: ${hydrated.assignee.name} (${hydrated.assignee.role})\n`;
-          if (hydrated.sprint) answer += `- **Sprint**: ${hydrated.sprint.name} (${hydrated.sprint.status})\n`;
-          if (hydrated.epic) answer += `- **Epic**: ${hydrated.epic.name}\n`;
-          if (hydrated.feature) answer += `- **Feature**: *${hydrated.feature}*\n`;
-          if (hydrated.phase) answer += `- **Release Phase**: \`${hydrated.phase}\`\n`;
-          if (hydrated.estimatedHours !== undefined) {
-            answer += `- **Hours Tracking**: ${hydrated.estimatedHours}h est. | ${hydrated.actualHours || 0}h logged | ${hydrated.remainingHours || 0}h remaining\n`;
+          answer += `#### **[${issue.key}] ${issue.summary}**\n`;
+          answer += `- **Type**: \`${issue.type}\` | **Priority**: \`${issue.priority}\` | **Status**: \`${issue.status.replace(/_/g, ' ')}\`\n`;
+          if (assignee) answer += `- **Assignee**: ${assignee.name} (${assignee.role})\n`;
+          if (sprint) answer += `- **Sprint**: ${sprint.name} (${sprint.status})\n`;
+          if (epic) answer += `- **Epic**: ${epic.name}\n`;
+          if (issue.feature) answer += `- **Feature**: *${issue.feature}*\n`;
+          if (issue.phase) answer += `- **Release Phase**: \`${issue.phase}\`\n`;
+          if (issue.estimatedHours !== undefined) {
+            answer += `- **Hours Tracking**: ${issue.estimatedHours}h est. | ${issue.actualHours || 0}h logged | ${issue.remainingHours || 0}h remaining\n`;
           }
-          if (hydrated.description) answer += `- **Description**: ${hydrated.description}\n`;
-          if (hydrated.acceptanceCriteria) {
-            answer += `\n**📋 Acceptance Criteria**:\n\`\`\`text\n${hydrated.acceptanceCriteria}\n\`\`\`\n`;
+          if (issue.storyPoints !== undefined) {
+            answer += `- **Story Points**: ${issue.storyPoints} pts\n`;
+          }
+          if (issue.description) answer += `- **Description**: ${issue.description}\n`;
+          if (issue.acceptanceCriteria) {
+            answer += `\n**📋 Acceptance Criteria**:\n\`\`\`text\n${issue.acceptanceCriteria}\n\`\`\`\n`;
           }
 
-          if (hydrated.linkedDocs && hydrated.linkedDocs.length > 0) {
+          // Find linked docs
+          const linkedDocs = activeDocs.filter(d => 
+            (d.linkedIssueKeys || []).map(k => k.toUpperCase()).includes(issue.key.toUpperCase()) ||
+            (issue.linkedDocIds || []).includes(d.id)
+          );
+          if (linkedDocs.length > 0) {
             answer += `\n**Linked Documentation Pages**:\n`;
-            hydrated.linkedDocs.forEach(d => {
+            linkedDocs.forEach(d => {
               addSource({
                 type: 'confluence',
                 id: d.id,
                 keyOrTitle: d.title,
-                snippet: `${d.category} in ${d.space?.name || 'Knowledge Base'}: ${d.excerpt}`
+                snippet: `${d.category}: ${d.excerpt}`
               });
               answer += `- 📄 **[Doc: ${d.title}]** (\`${d.status}\` | \`${d.category}\`) — ${d.excerpt}\n`;
             });
@@ -1081,11 +1303,43 @@ class JiraDataStore {
       }
     }
 
-    // 2. Acceptance Criteria / Mobile OTP / Login queries
+    // 2. Organisation Roadmap & Strategic Milestones
+    if (qLower.includes('roadmap') || qLower.includes('initiative') || qLower.includes('strategic') || qLower.includes('quarter') || qLower.includes('milestone') || qLower.includes('vision')) {
+      const inits = this.roadmapInitiatives;
+      inits.forEach(i => {
+        addSource({
+          type: 'confluence',
+          id: i.id,
+          keyOrTitle: `Roadmap: ${i.title}`,
+          snippet: `${i.track} (${i.targetQuarter}) - ${i.status}: ${i.progress}% done`
+        });
+      });
+
+      let answer = `### 🗺️ Organisation Strategic Roadmap & Horizon\n\n`;
+      answer += `Here is the current strategic trajectory across our engineering and product tracks:\n\n`;
+
+      const quarters = ['Q1 2026', 'Q2 2026', 'Q3 2026', 'Q4 2026', 'H1 2027'];
+      quarters.forEach(q => {
+        const matching = inits.filter(i => i.targetQuarter === q);
+        if (matching.length > 0) {
+          answer += `#### 📅 **${q} Initiatives**:\n`;
+          matching.forEach(i => {
+            answer += `- **${i.title}** (\`${i.status}\` — **${i.progress}% complete**)\n`;
+            answer += `  - **Track**: \`${i.track}\` | **Owner**: ${i.owner || 'Leadership'}\n`;
+            if (i.description) answer += `  - *Scope*: ${i.description}\n`;
+          });
+          answer += `\n`;
+        }
+      });
+
+      return { answer, sources };
+    }
+
+    // 3. Acceptance Criteria / Mobile OTP / Login queries
     if (qLower.includes('acceptance criteria') || qLower.includes('otp') || qLower.includes('passwordless') || qLower.includes('mobile login')) {
-      const otpStory = this.issues.find(i => i.key === 'WEZ-101' || i.feature?.toLowerCase().includes('otp'));
-      const prdDoc = this.docs.find(d => d.id === 'doc-3' || d.title.toLowerCase().includes('otp'));
-      const rfcDoc = this.docs.find(d => d.id === 'doc-1' || d.title.toLowerCase().includes('sso'));
+      const otpStory = activeIssues.find(i => i.key.toUpperCase() === 'WEZ-101' || i.key.toUpperCase() === 'WB-101' || i.feature?.toLowerCase().includes('otp') || i.summary.toLowerCase().includes('otp'));
+      const prdDoc = activeDocs.find(d => d.id === 'doc-3' || d.title.toLowerCase().includes('otp') || d.title.toLowerCase().includes('prd'));
+      const rfcDoc = activeDocs.find(d => d.id === 'doc-1' || d.title.toLowerCase().includes('sso'));
 
       if (otpStory) {
         addSource({ type: 'jira', id: otpStory.id, keyOrTitle: otpStory.key, snippet: otpStory.summary });
@@ -1098,8 +1352,9 @@ class JiraDataStore {
       }
 
       let answer = `### 📱 Mobile OTP & Passwordless Login Specifications\n\n`;
-      answer += `Based on Jira story **[WEZ-101]** and Confluence document **[Doc: PRD: Mobile OTP & Passwordless Resident Authentication]**, here is the approved specification:\n\n`;
-      answer += `#### **Release Phase**: \`MVP\` | **Epic**: Account & Profile | **Assignee**: Alex Rivera\n\n`;
+      const keyRef = otpStory ? `**[${otpStory.key}]**` : `**[WB-101]**`;
+      answer += `Based on Jira story ${keyRef} and Confluence document **[Doc: PRD: Mobile OTP & Passwordless Resident Authentication]**, here is the approved specification:\n\n`;
+      answer += `#### **Release Phase**: \`MVP\` | **Epic**: Account & Profile | **Lead Architect**: Althaf Thajudeen\n\n`;
       answer += `#### **Given / When / Then Acceptance Criteria**:\n`;
       answer += `1. **Given** I enter a registered mobile or email, **when** I request a code, **then** a 6-digit OTP is sent within 30 seconds and expires after 5 minutes.\n`;
       answer += `2. **Given** I enter a wrong OTP 5 times, **when** I try again, **then** login is blocked for 15 minutes and I see a clear message.\n`;
@@ -1113,21 +1368,22 @@ class JiraDataStore {
       return { answer, sources };
     }
 
-    // 3. Blockers & Open Bugs / Critical Bugs
+    // 4. Blockers & Open Bugs / Critical Defects
     if (qLower.includes('blocker') || qLower.includes('bug') || qLower.includes('defect') || qLower.includes('critical')) {
-      const bugs = this.issues.filter(i => i.type === 'BUG');
+      const bugs = activeIssues.filter(i => i.type === 'BUG');
       bugs.forEach(b => addSource({ type: 'jira', id: b.id, keyOrTitle: b.key, snippet: `${b.severity || b.priority}: ${b.summary}` }));
       
-      const runbookDoc = this.docs.find(d => d.id === 'doc-5');
+      const runbookDoc = activeDocs.find(d => d.id === 'doc-5' || d.title.toLowerCase().includes('runbook') || d.title.toLowerCase().includes('incident'));
       if (runbookDoc) addSource({ type: 'confluence', id: runbookDoc.id, keyOrTitle: runbookDoc.title, snippet: runbookDoc.excerpt });
 
       let answer = `### 🐛 Open Bugs & Triage Status\n\n`;
       answer += `Currently tracking **${bugs.length} bugs** across the platform:\n\n`;
       bugs.forEach(b => {
-        const hyd = this.hydrateIssue(b);
+        const assignee = activeUsers.find(u => u.id === b.assigneeId);
+        const sprint = activeSprints.find(s => s.id === b.sprintId);
         answer += `#### **[${b.key}] ${b.summary}**\n`;
         answer += `- **Severity**: \`${b.severity || 'MAJOR'}\` | **Priority**: \`${b.priority}\` | **Status**: \`${b.status.replace(/_/g, ' ')}\`\n`;
-        answer += `- **Assignee**: ${hyd.assignee?.name || 'Unassigned'} | **Sprint**: ${hyd.sprint?.name || 'Backlog'}\n`;
+        answer += `- **Assignee**: ${assignee?.name || 'Unassigned'} | **Sprint**: ${sprint?.name || 'Backlog'}\n`;
         answer += `- **Hours Tracking**: ${b.estimatedHours || 0}h estimated, ${b.actualHours || 0}h logged, ${b.remainingHours || 0}h remaining\n`;
         if (b.description) answer += `- **Root Cause / Impact**: ${b.description}\n`;
         answer += `\n`;
@@ -1137,17 +1393,24 @@ class JiraDataStore {
       return { answer, sources };
     }
 
-    // 4. Sprint Status / Active Sprint / Burndown / Progress
+    // 5. Sprint Status / Active Sprint / Burndown / Velocity
     if (qLower.includes('sprint') || qLower.includes('burndown') || qLower.includes('velocity') || qLower.includes('active sprint')) {
-      const activeSprint = this.sprints.find(s => s.status === 'ACTIVE') || this.sprints[0];
-      const sprintIssues = this.issues.filter(i => i.sprintId === activeSprint.id);
+      const activeSprint = activeSprints.find(s => s.status === 'ACTIVE') || activeSprints[0];
+      if (!activeSprint) {
+        return {
+          answer: `No sprint found in current workspace. You can create or start a sprint from the Backlog board.`,
+          sources: []
+        };
+      }
+
+      const sprintIssues = activeIssues.filter(i => i.sprintId === activeSprint.id);
       const totalPoints = sprintIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
       const completedPoints = sprintIssues.filter(i => i.status === 'DONE').reduce((sum, i) => sum + (i.storyPoints || 0), 0);
       const totalEstHours = sprintIssues.reduce((sum, i) => sum + (i.estimatedHours || 0), 0);
       const totalRemHours = sprintIssues.reduce((sum, i) => sum + (i.remainingHours || 0), 0);
 
       sprintIssues.slice(0, 4).forEach(i => addSource({ type: 'jira', id: i.id, keyOrTitle: i.key, snippet: i.summary }));
-      const retroDoc = this.docs.find(d => d.category === 'RETROSPECTIVE');
+      const retroDoc = activeDocs.find(d => d.category === 'RETROSPECTIVE');
       if (retroDoc) addSource({ type: 'confluence', id: retroDoc.id, keyOrTitle: retroDoc.title, snippet: retroDoc.excerpt });
 
       let answer = `### 🚀 Active Sprint Overview: ${activeSprint.name}\n\n`;
@@ -1167,22 +1430,23 @@ class JiraDataStore {
       return { answer, sources };
     }
 
-    // 5. Architecture & Technical Design RFCs
-    if (qLower.includes('architecture') || qLower.includes('rfc') || qLower.includes('design') || qLower.includes('sso') || qLower.includes('saml') || qLower.includes('websocket')) {
-      const archDocs = this.docs.filter(d => d.category === 'ARCHITECTURE' || d.category === 'DECISION_RECORD');
+    // 6. Architecture & Technical Design RFCs
+    if (qLower.includes('architecture') || qLower.includes('rfc') || qLower.includes('design') || qLower.includes('sso') || qLower.includes('saml') || qLower.includes('websocket') || qLower.includes('confluence')) {
+      const archDocs = activeDocs.filter(d => d.category === 'ARCHITECTURE' || d.category === 'DECISION_RECORD' || d.category === 'PRD');
       archDocs.forEach(d => addSource({ type: 'confluence', id: d.id, keyOrTitle: d.title, snippet: d.excerpt }));
 
       let answer = `### 🏛️ Architecture & System Design Documentation\n\n`;
       answer += `Here is the current technical blueprint from Confluence:\n\n`;
       archDocs.forEach(d => {
+        const author = activeUsers.find(u => u.id === d.authorId);
         answer += `#### **[Doc: ${d.title}]** (\`${d.status}\`)\n`;
         answer += `- **Space**: ${this.spaces.find(s => s.id === d.spaceId)?.name || 'Engineering'}\n`;
-        answer += `- **Author**: ${this.users.find(u => u.id === d.authorId)?.name || 'Lead Architect'}\n`;
+        answer += `- **Author**: ${author?.name || 'Lead Architect'}\n`;
         answer += `- **Summary**: ${d.excerpt}\n`;
         if (d.linkedIssueKeys && d.linkedIssueKeys.length > 0) {
           answer += `- **Related Jira Tickets**: ${d.linkedIssueKeys.map(k => `**[${k}]**`).join(', ')}\n`;
           d.linkedIssueKeys.forEach(k => {
-            const iss = this.issues.find(i => i.key === k);
+            const iss = activeIssues.find(i => i.key.toUpperCase() === k.toUpperCase());
             if (iss) addSource({ type: 'jira', id: iss.id, keyOrTitle: iss.key, snippet: iss.summary });
           });
         }
@@ -1191,26 +1455,35 @@ class JiraDataStore {
       return { answer, sources };
     }
 
-    // 6. User / Assignee workload (e.g. Alex, David, Elena)
-    const userMatch = this.users.find(u => qLower.includes(u.name.toLowerCase()) || qLower.includes(u.name.split(' ')[0].toLowerCase()));
-    if (userMatch && (qLower.includes('workload') || qLower.includes('hour') || qLower.includes('assign') || qLower.includes('task') || qLower.includes('what is'))) {
-      const userIssues = this.issues.filter(i => i.assigneeId === userMatch.id);
-      const userDocs = this.docs.filter(d => d.authorId === userMatch.id);
+    // 7. Team Member Workload (Althaf, Jayasree, Binsitha, Abhijith, Ramees, Vineeth)
+    const userMatch = activeUsers.find(u => 
+      qLower.includes(u.name.toLowerCase()) || 
+      qLower.includes(u.name.split(' ')[0].toLowerCase()) ||
+      qLower.includes(u.name.split(' ')[1]?.toLowerCase() || '')
+    );
+    if (userMatch && (qLower.includes('workload') || qLower.includes('hour') || qLower.includes('assign') || qLower.includes('task') || qLower.includes('what is') || qLower.includes('profile') || qLower.includes('status'))) {
+      const userIssues = activeIssues.filter(i => i.assigneeId === userMatch.id);
+      const userDocs = activeDocs.filter(d => d.authorId === userMatch.id);
       const totalHours = userIssues.reduce((sum, i) => sum + (i.remainingHours || 0), 0);
       const totalPoints = userIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
 
       userIssues.slice(0, 3).forEach(i => addSource({ type: 'jira', id: i.id, keyOrTitle: i.key, snippet: i.summary }));
       userDocs.slice(0, 2).forEach(d => addSource({ type: 'confluence', id: d.id, keyOrTitle: d.title, snippet: d.excerpt }));
 
-      let answer = `### 👤 Workload & Assignment for ${userMatch.name} (${userMatch.role})\n\n`;
+      let answer = `### 👤 Workload & Assignment for ${userMatch.name} (${userMatch.jobTitle || userMatch.role})\n\n`;
+      answer += `- **Role & Department**: \`${userMatch.role}\` | ${userMatch.department || 'Engineering'}\n`;
       answer += `- **Assigned Tickets**: ${userIssues.length} issues\n`;
       answer += `- **Total Story Points**: ${totalPoints} pts\n`;
       answer += `- **Remaining Hours**: ${totalHours}h\n\n`;
       
-      answer += `#### **Active Jira Tickets**:\n`;
-      userIssues.forEach(i => {
-        answer += `- **[${i.key}]** \`${i.status.replace(/_/g, ' ')}\` (${i.priority}) — ${i.summary} (${i.remainingHours || 0}h rem)\n`;
-      });
+      if (userIssues.length > 0) {
+        answer += `#### **Active Jira Tickets**:\n`;
+        userIssues.forEach(i => {
+          answer += `- **[${i.key}]** \`${i.status.replace(/_/g, ' ')}\` (${i.priority}) — ${i.summary} (${i.remainingHours || 0}h rem)\n`;
+        });
+      } else {
+        answer += `*No active Jira tickets assigned currently.*\n`;
+      }
 
       if (userDocs.length > 0) {
         answer += `\n#### **Authored Confluence Documents**:\n`;
@@ -1221,16 +1494,16 @@ class JiraDataStore {
       return { answer, sources };
     }
 
-    // 7. General Synthesis / Keyword search across both Jira & Confluence
+    // 8. General Synthesis / Keyword search across both Jira & Confluence
     const words = qLower.split(/\W+/).filter(w => w.length > 2);
-    const scoredIssues = this.issues.map(i => {
+    const scoredIssues = activeIssues.map(i => {
       let score = 0;
       const text = `${i.key} ${i.summary} ${i.description || ''} ${i.feature || ''} ${i.acceptanceCriteria || ''}`.toLowerCase();
       words.forEach(w => { if (text.includes(w)) score += 1; });
       return { issue: i, score };
     }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
 
-    const scoredDocs = this.docs.map(d => {
+    const scoredDocs = activeDocs.map(d => {
       let score = 0;
       const text = `${d.title} ${d.excerpt} ${d.content} ${d.category}`.toLowerCase();
       words.forEach(w => { if (text.includes(w)) score += 1; });
@@ -1265,19 +1538,19 @@ class JiraDataStore {
       return { answer, sources };
     }
 
-    // Fallback: Welcome & Capability guidance
+    // Fallback: Welcome & Real Capability Guidance
     return {
       answer: `### 👋 Hi! I am WezAI, your Wezblue AI Assistant.
 
-I can answer questions across your **Jira tickets**, **sprints**, **backlogs**, and **Confluence documentation**.
+I can answer questions across your **Jira tickets**, **sprints**, **epics**, **organisation roadmap**, and **Confluence documentation**.
 
 Here are some things you can ask me:
 - **"What are our mobile OTP login acceptance criteria?"**
-- **"What are the open blockers or bugs in Sprint 24?"**
-- **"Summarize the Architecture RFC for SSO"**
-- **"What is the burndown status of Wezblue Sprint 24?"**
-- **"What is the workload and remaining hours for Alex Rivera?"**
-- **"Show me all tickets linked to [WEZ-101]"**`,
+- **"What are the open blockers or bugs across the project?"**
+- **"Summarize our Organisation Roadmap initiatives"**
+- **"What is the burndown status of the active sprint?"**
+- **"What is the workload and remaining hours for Althaf Thajudeen?"**
+- **"Show me all tickets linked to [WB-101] or [WEZ-101]"**`,
       sources: []
     };
   }
