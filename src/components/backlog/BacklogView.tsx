@@ -12,7 +12,8 @@ import {
 export default function BacklogView() {
   const { 
     issues, sprints, currentProject, updateIssue, moveIssueStatus,
-    setSelectedIssue, setIsCreateModalOpen, setIsBulkUploadOpen, permissions, refreshData, showToast 
+    setSelectedIssue, setIsCreateModalOpen, setIsBulkUploadOpen, permissions, refreshData, showToast,
+    bulkImportStories
   } = useApp();
 
   const [expandedSprints, setExpandedSprints] = useState<Record<string, boolean>>({
@@ -25,6 +26,64 @@ export default function BacklogView() {
   const [isCreatingSprint, setIsCreatingSprint] = useState(false);
   const [search, setSearch] = useState('');
   const [phaseFilter, setPhaseFilter] = useState('ALL');
+  const [isLoadingStarters, setIsLoadingStarters] = useState(false);
+
+  const handleLoadStarterStories = async () => {
+    setIsLoadingStarters(true);
+    try {
+      const starterStories = [
+        {
+          epicName: 'Account & Profile',
+          feature: 'Login via mobile OTP / email',
+          userStory: "As a resident, I want to log in with a one-time code sent to my mobile or email, so that I don't need to remember a password.",
+          acceptanceCriteria: "1. Given I enter a registered mobile/email, when I request a code, then a 6-digit OTP is sent within 30 seconds and expires after 5 minutes\n2. Given I enter a wrong OTP 5 times, when I try again, then login is blocked for 15 minutes and I see a clear message\n3. Given I enter an unregistered number, when I request a code, then I am told to use my invite or request to join a society\n4. Given I choose 'remember this device', when I reopen the app within 30 days, then I stay logged in",
+          phase: 'MVP',
+        },
+        {
+          epicName: 'Account & Profile',
+          feature: 'Biometric & Quick Login',
+          userStory: 'As a resident, I want to authenticate using device biometrics (Face ID or fingerprint), so that I can access the app with minimal delay.',
+          acceptanceCriteria: '1. Given device biometric is registered, when I open app, then prompt biometric challenge\n2. Given biometric succeeds, when verified, then immediately navigate to Dashboard',
+          phase: 'MVP',
+        },
+        {
+          epicName: 'Billing & Invoicing',
+          feature: 'Automated Maintenance Invoices',
+          userStory: 'As a society accountant, I want monthly maintenance bills generated on the 1st of each month, so that dues are invoiced on time.',
+          acceptanceCriteria: '1. Given active units, when 1st of month triggers, then compute dues based on square footage\n2. Given invoice created, when dispatched, then send notification to resident',
+          phase: 'MVP',
+        },
+        {
+          epicName: 'Billing & Invoicing',
+          feature: 'Digital Maintenance Payments',
+          userStory: 'As a resident, I want to pay my society maintenance invoice via UPI or credit card, so that I receive an instant digital receipt.',
+          acceptanceCriteria: '1. Given unpaid invoice, when resident clicks Pay Now, then present UPI QR and Stripe options\n2. Given payment succeeds, mark invoice PAID and generate PDF receipt\n3. Given payment fails, show friendly retry message',
+          phase: 'MVP',
+        },
+        {
+          epicName: 'Security & Operations',
+          feature: 'Visitor Gate Pass',
+          userStory: 'As a resident, I want to pre-approve expected guests and generate a QR entry pass, so that security can let them in quickly.',
+          acceptanceCriteria: '1. Given resident enters visitor name and arrival date, when submitted, generate a 4-digit OTP and QR pass\n2. Given guard scans QR code at gate, when validated, mark visitor checked in and notify resident',
+          phase: 'Phase 1',
+        },
+      ];
+
+      const res = await bulkImportStories({
+        projectId: currentProject.id,
+        stories: starterStories,
+      });
+
+      if (res && res.success) {
+        showToast(`Loaded ${res.importedCount} starter stories successfully!`, 'success');
+        refreshData();
+      }
+    } catch (e) {
+      showToast('Failed to load starter stories', 'error');
+    } finally {
+      setIsLoadingStarters(false);
+    }
+  };
 
   const toggleExpand = (id: string) => {
     setExpandedSprints(prev => ({ ...prev, [id]: !prev[id] }));
@@ -521,6 +580,14 @@ export default function BacklogView() {
                   </div>
                   {!search && permissions.canCreateIssue && (
                     <div className="flex items-center justify-center space-x-2">
+                      <button
+                        onClick={handleLoadStarterStories}
+                        disabled={isLoadingStarters}
+                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 text-xs font-bold rounded-lg transition"
+                      >
+                        <Zap className="w-3.5 h-3.5 text-purple-600" />
+                        <span>{isLoadingStarters ? 'Loading...' : 'Load Starter User Stories'}</span>
+                      </button>
                       <button
                         onClick={() => setIsBulkUploadOpen(true)}
                         className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-lg transition"
