@@ -9,6 +9,7 @@ export async function GET(req: Request) {
   const status = searchParams.get('status') || undefined;
   const search = searchParams.get('search') || undefined;
 
+  await db.syncWithCloud();
   const issues = db.getIssues({ projectId, sprintId, type, status, search });
   return NextResponse.json({ issues });
 }
@@ -16,9 +17,12 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    await db.syncWithCloud();
     const issue = db.createIssue(body);
+    await db.persistToCloud();
     return NextResponse.json({ issue, message: 'Issue created successfully' }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create issue' }, { status: 400 });
   }
 }
+

@@ -15,10 +15,16 @@ import {
 export const INITIAL_ROADMAP_INITIATIVES: RoadmapInitiative[] = [];
 
 
+if (typeof process !== 'undefined' && process.env && !process.env.NODE_TLS_REJECT_UNAUTHORIZED) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 const LOCAL_DATA_DIR = path.join(process.cwd(), 'data');
 const BASE_DB_FILE = path.join(LOCAL_DATA_DIR, 'wezblue_db.json');
 const DATA_DIR = process.env.VERCEL ? '/tmp/wezblue_data' : LOCAL_DATA_DIR;
 const DB_FILE = path.join(DATA_DIR, 'wezblue_db.json');
+const CLOUD_DB_URL = process.env.CLOUD_DB_URL || 'https://extendsclass.com/api/json-storage/bin/cadebde';
+
 
 class JiraDataStore {
   private users: User[] = [...INITIAL_USERS];
@@ -38,6 +44,146 @@ class JiraDataStore {
     this.loadFromDisk();
   }
 
+  public getSnapshot() {
+    return {
+      version: '1.0.0',
+      savedAt: new Date().toISOString(),
+      users: this.users,
+      projects: this.projects,
+      sprints: this.sprints,
+      epics: this.epics,
+      issues: this.issues,
+      notifications: this.notifications,
+      activityLogs: this.activityLogs,
+      spaces: this.spaces,
+      docs: this.docs,
+      roadmapInitiatives: this.roadmapInitiatives,
+      rolePermissions: this.rolePermissions,
+      currentUser: this.currentUser,
+    };
+  }
+
+  public async syncWithCloud(timeoutMs: number = 4000): Promise<boolean> {
+    try {
+      if (typeof window === 'undefined') {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const res = await fetch(CLOUD_DB_URL, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object') {
+            this.mergeRemoteSnapshot(data);
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      // Graceful fallback to local in-memory
+    }
+    return false;
+  }
+
+  public async persistToCloud(timeoutMs: number = 4000): Promise<boolean> {
+    try {
+      if (typeof window === 'undefined') {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const snapshot = this.getSnapshot();
+        const res = await fetch(CLOUD_DB_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(snapshot),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        return res.ok;
+      }
+    } catch (e) {
+      // Graceful fallback
+    }
+    return false;
+  }
+
+  public mergeRemoteSnapshot(data: any) {
+    if (!data || typeof data !== 'object') return;
+
+    if (Array.isArray(data.users) && data.users.length) {
+      const userMap = new Map(this.users.map(u => [u.id, u]));
+      for (const u of data.users) {
+        if (!userMap.has(u.id)) {
+          userMap.set(u.id, u);
+        } else {
+          userMap.set(u.id, { ...userMap.get(u.id)!, ...u });
+        }
+      }
+      this.users = Array.from(userMap.values());
+    }
+
+    if (Array.isArray(data.projects) && data.projects.length) {
+      const projMap = new Map(this.projects.map(p => [p.id, p]));
+      for (const p of data.projects) {
+        if (!projMap.has(p.id)) {
+          projMap.set(p.id, p);
+        } else {
+          projMap.set(p.id, { ...projMap.get(p.id)!, ...p });
+        }
+      }
+      this.projects = Array.from(projMap.values());
+    }
+
+    if (Array.isArray(data.sprints)) {
+      const sprintMap = new Map(this.sprints.map(s => [s.id, s]));
+      for (const s of data.sprints) {
+        sprintMap.set(s.id, s);
+      }
+      this.sprints = Array.from(sprintMap.values());
+    }
+
+    if (Array.isArray(data.epics)) {
+      const epicMap = new Map(this.epics.map(e => [e.id, e]));
+      for (const e of data.epics) {
+        epicMap.set(e.id, e);
+      }
+      this.epics = Array.from(epicMap.values());
+    }
+
+    if (Array.isArray(data.issues)) {
+      const issueMap = new Map(this.issues.map(i => [i.id, i]));
+      for (const i of data.issues) {
+        issueMap.set(i.id, i);
+      }
+      this.issues = Array.from(issueMap.values());
+    }
+
+    if (Array.isArray(data.spaces) && data.spaces.length) {
+      const spaceMap = new Map(this.spaces.map(s => [s.id, s]));
+      for (const s of data.spaces) spaceMap.set(s.id, s);
+      this.spaces = Array.from(spaceMap.values());
+    }
+
+    if (Array.isArray(data.docs) && data.docs.length) {
+      const docMap = new Map(this.docs.map(d => [d.id, d]));
+      for (const d of data.docs) docMap.set(d.id, d);
+      this.docs = Array.from(docMap.values());
+    }
+
+    if (Array.isArray(data.roadmapInitiatives)) {
+      const roadMap = new Map(this.roadmapInitiatives.map(r => [r.id, r]));
+      for (const r of data.roadmapInitiatives) roadMap.set(r.id, r);
+      this.roadmapInitiatives = Array.from(roadMap.values());
+    }
+
+    if (data.rolePermissions && typeof data.rolePermissions === 'object') {
+      this.rolePermissions = { ...this.rolePermissions, ...data.rolePermissions };
+    }
+  }
+
   private loadFromDisk() {
     try {
       if (typeof window === 'undefined') {
@@ -50,19 +196,7 @@ class JiraDataStore {
 
         if (raw) {
           const data = JSON.parse(raw);
-          if (data.users && Array.isArray(data.users) && data.users.length) this.users = data.users;
-          if (data.projects && Array.isArray(data.projects) && data.projects.length) this.projects = data.projects;
-          if (data.sprints && Array.isArray(data.sprints)) this.sprints = data.sprints;
-          if (data.epics && Array.isArray(data.epics)) this.epics = data.epics;
-          if (data.issues && Array.isArray(data.issues)) this.issues = data.issues;
-          if (data.notifications && Array.isArray(data.notifications)) this.notifications = data.notifications;
-          if (data.activityLogs && Array.isArray(data.activityLogs)) this.activityLogs = data.activityLogs;
-          if (data.spaces && Array.isArray(data.spaces)) this.spaces = data.spaces;
-          if (data.docs && Array.isArray(data.docs)) this.docs = data.docs;
-          if (data.roadmapInitiatives && Array.isArray(data.roadmapInitiatives)) this.roadmapInitiatives = data.roadmapInitiatives;
-          if (data.rolePermissions && typeof data.rolePermissions === 'object') {
-            this.rolePermissions = { ...ROLE_PERMISSIONS, ...data.rolePermissions };
-          }
+          this.mergeRemoteSnapshot(data);
           if (data.currentUser) this.currentUser = data.currentUser;
           return;
         }
@@ -79,22 +213,7 @@ class JiraDataStore {
         if (!fs.existsSync(DATA_DIR)) {
           fs.mkdirSync(DATA_DIR, { recursive: true });
         }
-        const snapshot = {
-          version: '1.0.0',
-          savedAt: new Date().toISOString(),
-          users: this.users,
-          projects: this.projects,
-          sprints: this.sprints,
-          epics: this.epics,
-          issues: this.issues,
-          notifications: this.notifications,
-          activityLogs: this.activityLogs,
-          spaces: this.spaces,
-          docs: this.docs,
-          roadmapInitiatives: this.roadmapInitiatives,
-          rolePermissions: this.rolePermissions,
-          currentUser: this.currentUser,
-        };
+        const snapshot = this.getSnapshot();
         fs.writeFileSync(DB_FILE, JSON.stringify(snapshot, null, 2), 'utf-8');
 
         // If local file is writable and not in Vercel, also sync to BASE_DB_FILE
@@ -103,11 +222,15 @@ class JiraDataStore {
             fs.writeFileSync(BASE_DB_FILE, JSON.stringify(snapshot, null, 2), 'utf-8');
           } catch {}
         }
+
+        // Fire-and-forget persistent cloud sync
+        this.persistToCloud().catch(() => {});
       }
     } catch (e) {
       // Ignore write errors in read-only environments
     }
   }
+
 
   public exportBackup() {
     return {

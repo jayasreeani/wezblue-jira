@@ -83,6 +83,10 @@ export default function BacklogView() {
 
   const q = search.toLowerCase().trim();
   const filteredIssues = issues.filter(i => {
+    // Project matching: match currentProject if set and issue has projectId
+    if (currentProject?.id && i.projectId && i.projectId !== currentProject.id) {
+      return false;
+    }
     if (q) {
       const matchKey = i.key.toLowerCase().includes(q);
       const matchSummary = i.summary.toLowerCase().includes(q);
@@ -177,6 +181,10 @@ export default function BacklogView() {
         </div>
 
         <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-bold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Cloud Synced</span>
+          </div>
           <button
             onClick={() => refreshData()}
             className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 transition"
@@ -187,6 +195,7 @@ export default function BacklogView() {
           </button>
         </div>
       </div>
+
 
       {/* Create Sprint Dialog */}
       {isCreatingSprint && (

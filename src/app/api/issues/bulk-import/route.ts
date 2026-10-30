@@ -13,7 +13,10 @@ export async function POST(req: Request) {
       );
     }
 
+    await db.syncWithCloud();
+
     const epicColorPalette = [
+
       '#8777d9', '#0052cc', '#00875a', '#ff991f', 
       '#de350b', '#00b8d9', '#6554c0', '#36b37e'
     ];
@@ -83,8 +86,10 @@ export async function POST(req: Request) {
     });
 
     const allProjectEpics = db.getEpics(projectId);
+    await db.persistToCloud();
 
     return NextResponse.json({
+
       success: true,
       importedCount: createdIssues.length,
       newEpicsCount,

@@ -339,19 +339,54 @@ Ask me anything about:
       const storedUserId = typeof window !== 'undefined' ? localStorage.getItem('wezblue_user_id') : currentUser.id;
       const authUrl = storedUserId ? `/api/auth?userId=${storedUserId}` : '/api/auth';
 
+      // 1. Gather any local browser cached data
+      let localIssues: any[] = [];
+      let localEpics: any[] = [];
+      let localSprints: any[] = [];
+      let localProjects: any[] = [];
+      let localUsers: any[] = [];
+
+      if (typeof window !== 'undefined') {
+        try {
+          localIssues = JSON.parse(localStorage.getItem('wezblue_issues_cache') || '[]');
+          localEpics = JSON.parse(localStorage.getItem('wezblue_epics_cache') || '[]');
+          localSprints = JSON.parse(localStorage.getItem('wezblue_sprints_cache') || '[]');
+          localProjects = JSON.parse(localStorage.getItem('wezblue_projects_cache') || '[]');
+          localUsers = JSON.parse(localStorage.getItem('wezblue_users_cache') || '[]');
+        } catch (e) {}
+      }
+
+      // 2. Perform bidirectional sync if client has any local items
+      if (localIssues.length > 0 || localEpics.length > 0 || localProjects.length > 0) {
+        try {
+          await fetch('/api/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              issues: localIssues,
+              epics: localEpics,
+              sprints: localSprints,
+              projects: localProjects,
+              users: localUsers,
+            }),
+          });
+        } catch (e) {}
+      }
+
       const [authRes, usersRes, projRes, issuesRes, sprintsRes, epicsRes, actRes, notifRes, spacesRes, docsRes, permsRes] = await Promise.all([
         fetch(authUrl),
         fetch('/api/users'),
         fetch('/api/projects'),
-        fetch(`/api/issues?projectId=${currentProject.id}`),
-        fetch(`/api/sprints?projectId=${currentProject.id}`),
-        fetch(`/api/epics?projectId=${currentProject.id}`),
+        fetch('/api/issues'),
+        fetch('/api/sprints'),
+        fetch('/api/epics'),
         fetch(`/api/activity?projectId=${currentProject.id}`),
         fetch('/api/notifications'),
         fetch('/api/confluence/spaces'),
         fetch('/api/confluence/docs'),
         fetch('/api/roles/permissions'),
       ]);
+
 
       const [authData, usersData, projData, issuesData, sprintsData, epicsData, actData, notifData, spacesData, docsData, permsData] = await Promise.all([
         authRes.json(),
